@@ -31,7 +31,7 @@ public:
 protected:
     struct ColladaAnimationTimeCmp
     {
-        bool operator()(float32 l, float32 r)
+        bool operator()(float32 l, float32 r) const
         {
             return !FLOAT_EQUAL(l, r) && (l < r);
         }
