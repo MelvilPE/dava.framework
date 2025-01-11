@@ -56,6 +56,10 @@ if( WIN32  )
 	endif ()
 endif()
 
+# Force builds only for x64 Architecture
+set (X64_MODE true)
+set( DAVA_PROJECT_BIT 64 )
+
 ################
 
 set( DAVA_PLATFORM_LIST IOS 
