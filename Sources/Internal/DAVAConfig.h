@@ -1,4 +1,5 @@
 #pragma once
+#include "DAVAIncludes.h"
 
 #ifndef DISABLE_AUTOTESTS
 #ifndef __DAVAENGINE_AUTOTESTING__
