@@ -1,3 +1,5 @@
+#pragma warning(disable : 4996)
+#pragma warning(disable : 4305)
 #include "REPlatform/Scene/Systems/CameraSystem.h"
 
 #include "REPlatform/Scene/SceneEditor2.h"

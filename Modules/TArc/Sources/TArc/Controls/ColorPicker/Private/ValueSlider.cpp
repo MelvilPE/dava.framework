@@ -1,3 +1,4 @@
+#pragma warning(disable: 4996)
 #include "TArc/Controls/ColorPicker/Private/ValueSlider.h"
 #include "TArc/Controls/ColorPicker/Private/MouseHelper.h"
 #include "TArc/Controls/ColorPicker/Private/PaintingHelper.h"
