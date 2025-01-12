@@ -71,7 +71,7 @@ void REModule::PostInit()
     const DAVA::EngineContext* engineContext = accessor->GetEngineContext();
     engineContext->localizationSystem->InitWithDirectory("~res:/Strings/");
     engineContext->localizationSystem->SetCurrentLocale("en");
-    engineContext->uiControlSystem->GetRenderSystem()->SetClearColor(DAVA::Color(.3f, .3f, .3f, 1.f));
+    engineContext->uiControlSystem->GetRenderSystem()->SetClearColor(DAVA::Color(.0f, .0f, .0f, 1.f));
 
     using TData = REModuleDetail::REGlobalData;
     DAVA::DataContext* globalContext = accessor->GetGlobalContext();

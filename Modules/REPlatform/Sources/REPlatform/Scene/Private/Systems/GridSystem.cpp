@@ -44,7 +44,7 @@ void SceneGridSystem::Draw()
             }
         }
 
-        static const Color grid0Color(0.0f, 0.0f, 0.0f, 1.0f);
+        static const Color grid0Color(1.0f, 1.0f, 1.0f, 1.0f);
 
         GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawLine(Vector3(-gridMax, 0, 0), Vector3(gridMax, 0, 0), grid0Color);
         GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawLine(Vector3(0, -gridMax, 0), Vector3(0, gridMax, 0), grid0Color);
