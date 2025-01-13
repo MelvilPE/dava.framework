@@ -356,6 +356,16 @@ void NMaterial::SetQualityGroup(const FastName& quality)
     qualityGroup = quality;
 }
 
+uint32 NMaterial::GetCustomCullMode() const
+{
+    return GetCurrentConfig().customCullMode;
+}
+
+void NMaterial::SetCustomCullMode(uint32 initCustomCullMode)
+{
+    GetMutableCurrentConfig().customCullMode = static_cast<rhi::CullMode>(initCustomCullMode);
+}
+
 void NMaterial::AddProperty(const FastName& propName, const float32* propData, rhi::ShaderProp::Type type, uint32 arraySize)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
@@ -1137,6 +1147,8 @@ void NMaterial::SaveConfigToArchive(uint32 configId, KeyedArchive* archive, Seri
         }
     }
 
+    archive->SetUInt32(DAVA::NMaterialSerializationKey::CustomCullMode, config.customCullMode);
+
     ScopedPtr<KeyedArchive> propertiesArchive(new KeyedArchive());
     for (auto it = config.localProperties.begin(), itEnd = config.localProperties.end(); it != itEnd; ++it)
     {
@@ -1224,6 +1236,15 @@ void NMaterial::LoadConfigFromArchive(uint32 configId, KeyedArchive* archive, Se
     if (archive->IsKeyExists(NMaterialSerializationKey::FXName))
     {
         config.fxName = FastName(archive->GetString(NMaterialSerializationKey::FXName));
+    }
+
+    if (archive->IsKeyExists(NMaterialSerializationKey::CustomCullMode))
+    {
+        config.customCullMode = static_cast<rhi::CullMode>(archive->GetUInt32(NMaterialSerializationKey::CustomCullMode, rhi::CullMode::CULL_NONE));
+    }
+    else
+    {
+        config.customCullMode = rhi::CullMode::CULL_NONE;
     }
 
     if (archive->IsKeyExists(NMaterialSerializationKey::ConfigName))

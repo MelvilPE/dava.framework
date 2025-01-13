@@ -253,6 +253,7 @@ public:
     static const DAVA::String ConfigArchive;
     static const DAVA::String ConfigCount;
     static const FastName DefaultConfigName;
+    static const DAVA::String CustomCullMode;
 };
 
 class NMaterialQualityName

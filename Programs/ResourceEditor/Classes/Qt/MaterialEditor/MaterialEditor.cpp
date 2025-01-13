@@ -57,6 +57,7 @@ const DAVA::FastName Template("Template");
 
 const DAVA::FastName Name("Name");
 const DAVA::FastName Group("Group");
+const DAVA::FastName CustomCullMode("Cull Mode");
 
 const DAVA::FastName Base("Base");
 const DAVA::FastName Flags("Flags");
@@ -478,6 +479,19 @@ private:
                 DAVA::FastName groupName = DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupName(i);
                 group->AddAllowedValue(DAVA::VariantType(groupName), groupName.c_str());
             }
+        }
+
+        // fill custom cull mode
+        const DAVA::InspMember* customCullModeMember = info->Member(DAVA::FastName("customCullMode"));
+        if (nullptr != customCullModeMember)
+        {
+            QtPropertyDataInspMember* dataInsp = new QtPropertyDataInspMember(UIName::CustomCullMode, material, customCullModeMember);
+            baseRoot->MergeChild(std::unique_ptr<QtPropertyData>(dataInsp));
+
+            // Add available custom cull modes:
+            dataInsp->AddAllowedValue(DAVA::VariantType(rhi::CullMode::CULL_NONE), "NONE");
+            dataInsp->AddAllowedValue(DAVA::VariantType(rhi::CullMode::CULL_CCW), "FACE_FRONT");
+            dataInsp->AddAllowedValue(DAVA::VariantType(rhi::CullMode::CULL_CW), "FACE_BACK");
         }
     }
 
@@ -1013,7 +1027,9 @@ void MaterialEditor::commandExecuted(DAVA::SceneEditor2* scene, const DAVA::RECo
 
     commandNotification.ForEach<DAVA::InspMemberModifyCommand>([&](const DAVA::InspMemberModifyCommand* cmd) {
         const DAVA::String memberName(cmd->member->Name().c_str());
-        if (memberName == DAVA::NMaterialSerializationKey::QualityGroup || memberName == DAVA::NMaterialSerializationKey::FXName)
+        if (memberName == DAVA::NMaterialSerializationKey::QualityGroup ||
+            memberName == DAVA::NMaterialSerializationKey::FXName ||
+            memberName == DAVA::NMaterialSerializationKey::CustomCullMode)
         {
             for (auto& m : curMaterials)
             {
