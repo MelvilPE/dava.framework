@@ -161,6 +161,12 @@
  name: "Textured Opaque.NoCull"
  path: Textured.Opaque.NoCull.material
 -
+ name: "Standard"
+ path: StandardAllQualities.material
+-
+ name: "BlinnPhong"
+ path: BlinnPhongAllQualities.material
+-
  name: "Normalized BlinnPhong Per Vertex Opaque"
  path: NormalizedBlinnPhongPerVertex.Opaque.material
 -
