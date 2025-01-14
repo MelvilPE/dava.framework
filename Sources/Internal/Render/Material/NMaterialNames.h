@@ -90,21 +90,29 @@ public:
     static const FastName TEXTURE_SPECULAR;
     static const FastName TEXTURE_DETAIL;
     static const FastName TEXTURE_LIGHTMAP;
+    static const FastName TEXTURE_PBR_LIGHTMAP;
     static const FastName TEXTURE_DECAL;
     static const FastName TEXTURE_CUBEMAP;
     static const FastName TEXTURE_HEIGHTMAP;
     static const FastName TEXTURE_TANGENTSPACE;
     static const FastName TEXTURE_DECALMASK;
     static const FastName TEXTURE_DECALTEXTURE;
+    static const FastName TEXTURE_TILED_DECAL_1;
+    static const FastName TEXTURE_TILED_DECAL_2;
+    static const FastName TEXTURE_TILED_DECAL_3;
+    static const FastName TEXTURE_MASK;
     static const FastName TEXTURE_FLOW;
     static const FastName TEXTURE_NOISE;
     static const FastName TEXTURE_ALPHA_REMAP;
-
     static const FastName TEXTURE_DYNAMIC_REFLECTION;
     static const FastName TEXTURE_DYNAMIC_REFRACTION;
-
     static const FastName TEXTURE_PARTICLES_HEATMAP;
     static const FastName TEXTURE_PARTICLES_RT;
+    static const FastName TEXTURE_ENV_REFLECTION_MASK;
+    static const FastName DIRT_NORMAL;
+    static const FastName DIRT_HEIGHTMAP;
+    static const FastName WETNESS_BOUNDARY;
+    static const FastName VERTEX_ANIMATION_TEXTURE;
 
     static bool IsRuntimeTexture(const FastName& texture);
 };

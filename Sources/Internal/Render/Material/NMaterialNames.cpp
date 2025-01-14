@@ -79,21 +79,29 @@ const FastName NMaterialTextureName::TEXTURE_NORMAL("normalmap");
 const FastName NMaterialTextureName::TEXTURE_SPECULAR("specularmap");
 const FastName NMaterialTextureName::TEXTURE_DETAIL("detail");
 const FastName NMaterialTextureName::TEXTURE_LIGHTMAP("lightmap");
+const FastName NMaterialTextureName::TEXTURE_PBR_LIGHTMAP("pbrLightmap");
 const FastName NMaterialTextureName::TEXTURE_DECAL("decal");
 const FastName NMaterialTextureName::TEXTURE_CUBEMAP("cubemap");
 const FastName NMaterialTextureName::TEXTURE_HEIGHTMAP("heightmap");
 const FastName NMaterialTextureName::TEXTURE_TANGENTSPACE("tangentSpace");
 const FastName NMaterialTextureName::TEXTURE_DECALMASK("decalmask");
 const FastName NMaterialTextureName::TEXTURE_DECALTEXTURE("decaltexture");
+const FastName NMaterialTextureName::TEXTURE_TILED_DECAL_1("decalTexture1");
+const FastName NMaterialTextureName::TEXTURE_TILED_DECAL_2("decalTexture2");
+const FastName NMaterialTextureName::TEXTURE_TILED_DECAL_3("decalTexture3");
+const FastName NMaterialTextureName::TEXTURE_MASK("mask");
 const FastName NMaterialTextureName::TEXTURE_FLOW("flowmap");
 const FastName NMaterialTextureName::TEXTURE_NOISE("noiseTex");
 const FastName NMaterialTextureName::TEXTURE_ALPHA_REMAP("alphaRemapTex");
-
 const FastName NMaterialTextureName::TEXTURE_DYNAMIC_REFLECTION("dynamicReflection");
 const FastName NMaterialTextureName::TEXTURE_DYNAMIC_REFRACTION("dynamicRefraction");
-
 const FastName NMaterialTextureName::TEXTURE_PARTICLES_HEATMAP("heatMap");
 const FastName NMaterialTextureName::TEXTURE_PARTICLES_RT("particlesRT");
+const FastName NMaterialTextureName::TEXTURE_ENV_REFLECTION_MASK("envReflectionMask");
+const FastName NMaterialTextureName::DIRT_NORMAL("dirtNormalMap");
+const FastName NMaterialTextureName::DIRT_HEIGHTMAP("dirtHeightMap");
+const FastName NMaterialTextureName::WETNESS_BOUNDARY("wetnessBoundaryMap");
+const FastName NMaterialTextureName::VERTEX_ANIMATION_TEXTURE("vertexAnimationTex");
 
 // params
 
