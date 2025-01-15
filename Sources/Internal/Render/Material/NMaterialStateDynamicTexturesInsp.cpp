@@ -59,13 +59,46 @@ void NMaterialStateDynamicTexturesInsp::FindMaterialTexturesRecursive(NMaterial*
         FindMaterialTexturesRecursive(material->GetParent(), ret);
 }
 
+
+void NMaterialStateDynamicTexturesInsp::SetAllPossibleMaterialTextures(NMaterial* material, Set<FastName>& ret) const
+{
+    ret.insert(FastName(NMaterialTextureName::TEXTURE_ALBEDO));
+    ret.insert(FastName(NMaterialTextureName::TEXTURE_NORMAL));
+    ret.insert(FastName(NMaterialTextureName::TEXTURE_SPECULAR));
+    ret.insert(FastName(NMaterialTextureName::TEXTURE_DETAIL));
+    ret.insert(FastName(NMaterialTextureName::TEXTURE_LIGHTMAP));
+    ret.insert(FastName(NMaterialTextureName::TEXTURE_PBR_LIGHTMAP));
+    ret.insert(FastName(NMaterialTextureName::TEXTURE_DECAL));
+    ret.insert(FastName(NMaterialTextureName::TEXTURE_CUBEMAP));
+    ret.insert(FastName(NMaterialTextureName::TEXTURE_HEIGHTMAP));
+    ret.insert(FastName(NMaterialTextureName::TEXTURE_TANGENTSPACE));
+    ret.insert(FastName(NMaterialTextureName::TEXTURE_DECALMASK));
+    ret.insert(FastName(NMaterialTextureName::TEXTURE_DECALTEXTURE));
+    ret.insert(FastName(NMaterialTextureName::TEXTURE_TILED_DECAL_1));
+    ret.insert(FastName(NMaterialTextureName::TEXTURE_TILED_DECAL_2));
+    ret.insert(FastName(NMaterialTextureName::TEXTURE_TILED_DECAL_3));
+    ret.insert(FastName(NMaterialTextureName::TEXTURE_MASK));
+    ret.insert(FastName(NMaterialTextureName::TEXTURE_FLOW));
+    ret.insert(FastName(NMaterialTextureName::TEXTURE_NOISE));
+    ret.insert(FastName(NMaterialTextureName::TEXTURE_ALPHA_REMAP));
+    ret.insert(FastName(NMaterialTextureName::TEXTURE_DYNAMIC_REFLECTION));
+    ret.insert(FastName(NMaterialTextureName::TEXTURE_DYNAMIC_REFRACTION));
+    ret.insert(FastName(NMaterialTextureName::TEXTURE_PARTICLES_HEATMAP));
+    ret.insert(FastName(NMaterialTextureName::TEXTURE_PARTICLES_RT));
+    ret.insert(FastName(NMaterialTextureName::TEXTURE_ENV_REFLECTION_MASK));
+    ret.insert(FastName(NMaterialTextureName::DIRT_NORMAL));
+    ret.insert(FastName(NMaterialTextureName::DIRT_HEIGHTMAP));
+    ret.insert(FastName(NMaterialTextureName::WETNESS_BOUNDARY));
+    ret.insert(FastName(NMaterialTextureName::VERTEX_ANIMATION_TEXTURE));
+}
+
 InspInfoDynamic::DynamicData NMaterialStateDynamicTexturesInsp::Prepare(void* object, int filter) const
 {
     NMaterial* material = static_cast<NMaterial*>(object);
     DVASSERT(material);
 
     Set<FastName>* data = new Set<FastName>();
-    FindMaterialTexturesRecursive(material, *data);
+    SetAllPossibleMaterialTextures(material, *data);
 
     // DF-10204, we don't allow change heightmap in material for new Landscape.
     data->erase(NMaterialTextureName::TEXTURE_HEIGHTMAP);

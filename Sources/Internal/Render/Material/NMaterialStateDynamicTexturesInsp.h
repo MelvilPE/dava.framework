@@ -24,6 +24,7 @@ public:
 
 private:
     void FindMaterialTexturesRecursive(NMaterial* state, Set<FastName>& ret) const;
+    void SetAllPossibleMaterialTextures(NMaterial* material, Set<FastName>& ret) const;
 
 private:
     Texture* defaultTexture = nullptr;
