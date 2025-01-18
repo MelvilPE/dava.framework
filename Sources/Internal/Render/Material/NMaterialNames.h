@@ -166,6 +166,44 @@ public:
     static const FastName PARAM_PARTICLES_GRADIENT_MIDDLE_POINT;
 };
 
+class NMaterialPresetName
+{
+public:
+    static const FastName ADDITIVE;
+    static const FastName REFLECTION_MASK;
+    static const FastName MULTIPLICATIVE;
+    static const FastName FORCE_AFTER_OPAQUE_LAYER;
+    static const FastName DISABLE_SHADOW;
+    static const FastName FORCE_ALPHA_TEST_LAYER;
+    static const FastName ALPHA_TEST;
+    static const FastName FOREGROUND_EFFECT;
+    static const FastName HIGHLIGHT_ANIMATION;
+    static const FastName LOD_TRANSITION;
+    static const FastName DISABLE_SHADOW_TRANSITION;
+    static const FastName PRESET_OPAQUE;
+    static const FastName CLAMP;
+    static const FastName LIGHTMAP;
+    static const FastName NO_DEPTH_TEST;
+    static const FastName FORCE_VEGETATION_LAYER;
+    static const FastName ALPHA_BLEND_ADDITIVE;
+    static const FastName DEBUG;
+    static const FastName WATER_DEFORMATION;
+    static const FastName ALPHA_MASK;
+    static const FastName FORCE_DRAW_DEPTH_PREPASS;
+    static const FastName DISABLE_DEPTH_WRITE;
+    static const FastName DEBUG_COLOR_UNLIT;
+    static const FastName DISABLE_SHADOW_RUNTIME_ONLY;
+    static const FastName ALPHA_BLEND;
+    static const FastName SIMPLE_COLOR;
+    static const FastName BLEND_WITH_CONST_ALPHA;
+    static const FastName FORCE_AFTER_DYNAMIC_DECALS_LAYER;
+    static const FastName DYNAMIC_DECAL_LAYER;
+    static const FastName FLOW_MAP;
+    static const FastName FORCE_TRANCLUCENT_LAYER;
+    static const FastName VERTEX_COLOR;
+    static const FastName CULL_FRONT_DEPTH_GREATER;
+};
+
 class NMaterialFlagName
 {
 public:

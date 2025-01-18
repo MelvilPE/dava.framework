@@ -152,6 +152,41 @@ const FastName NMaterialParamName::PARAM_PARTICLES_GRADIENT_COLOR_FOR_BLACK("gra
 const FastName NMaterialParamName::PARAM_PARTICLES_GRADIENT_COLOR_FOR_MIDDLE("gradientColorForMiddle");
 const FastName NMaterialParamName::PARAM_PARTICLES_GRADIENT_MIDDLE_POINT("gradientMiddlePoint");
 
+// Presets
+const FastName NMaterialPresetName::ADDITIVE = FastName("ADDITIVE");
+const FastName NMaterialPresetName::REFLECTION_MASK = FastName("REFLECTION_MASK");
+const FastName NMaterialPresetName::MULTIPLICATIVE = FastName("MULTIPLICATIVE");
+const FastName NMaterialPresetName::FORCE_AFTER_OPAQUE_LAYER = FastName("FORCE_AFTER_OPAQUE_LAYER");
+const FastName NMaterialPresetName::DISABLE_SHADOW = FastName("DISABLE_SHADOW");
+const FastName NMaterialPresetName::FORCE_ALPHA_TEST_LAYER = FastName("FORCE_ALPHA_TEST_LAYER");
+const FastName NMaterialPresetName::ALPHA_TEST = FastName("ALPHA_TEST");
+const FastName NMaterialPresetName::FOREGROUND_EFFECT = FastName("FOREGROUND_EFFECT");
+const FastName NMaterialPresetName::HIGHLIGHT_ANIMATION = FastName("HIGHLIGHT_ANIMATION");
+const FastName NMaterialPresetName::LOD_TRANSITION = FastName("LOD_TRANSITION");
+const FastName NMaterialPresetName::DISABLE_SHADOW_TRANSITION = FastName("DISABLE_SHADOW_TRANSITION");
+const FastName NMaterialPresetName::PRESET_OPAQUE = FastName("OPAQUE");
+const FastName NMaterialPresetName::CLAMP = FastName("CLAMP");
+const FastName NMaterialPresetName::LIGHTMAP = FastName("LIGHTMAP");
+const FastName NMaterialPresetName::NO_DEPTH_TEST = FastName("NO_DEPTH_TEST");
+const FastName NMaterialPresetName::FORCE_VEGETATION_LAYER = FastName("FORCE_VEGETATION_LAYER");
+const FastName NMaterialPresetName::ALPHA_BLEND_ADDITIVE = FastName("ALPHA_BLEND_ADDITIVE");
+const FastName NMaterialPresetName::DEBUG = FastName("DEBUG");
+const FastName NMaterialPresetName::WATER_DEFORMATION = FastName("WATER_DEFORMATION");
+const FastName NMaterialPresetName::ALPHA_MASK = FastName("ALPHA_MASK");
+const FastName NMaterialPresetName::FORCE_DRAW_DEPTH_PREPASS = FastName("FORCE_DRAW_DEPTH_PREPASS");
+const FastName NMaterialPresetName::DISABLE_DEPTH_WRITE = FastName("DISABLE_DEPTH_WRITE");
+const FastName NMaterialPresetName::DEBUG_COLOR_UNLIT = FastName("DEBUG_COLOR_UNLIT");
+const FastName NMaterialPresetName::DISABLE_SHADOW_RUNTIME_ONLY = FastName("DISABLE_SHADOW_RUNTIME_ONLY");
+const FastName NMaterialPresetName::ALPHA_BLEND = FastName("ALPHA_BLEND");
+const FastName NMaterialPresetName::SIMPLE_COLOR = FastName("SIMPLE_COLOR");
+const FastName NMaterialPresetName::BLEND_WITH_CONST_ALPHA = FastName("BLEND_WITH_CONST_ALPHA");
+const FastName NMaterialPresetName::FORCE_AFTER_DYNAMIC_DECALS_LAYER = FastName("FORCE_AFTER_DYNAMIC_DECALS_LAYER");
+const FastName NMaterialPresetName::DYNAMIC_DECAL_LAYER = FastName("DYNAMIC_DECAL_LAYER");
+const FastName NMaterialPresetName::FLOW_MAP = FastName("FLOW_MAP");
+const FastName NMaterialPresetName::FORCE_TRANCLUCENT_LAYER = FastName("FORCE_TRANCLUCENT_LAYER");
+const FastName NMaterialPresetName::VERTEX_COLOR = FastName("VERTEX_COLOR");
+const FastName NMaterialPresetName::CULL_FRONT_DEPTH_GREATER = FastName("CULL_FRONT_DEPTH_GREATER");
+
 //flags
 const FastName NMaterialFlagName::FLAG_BLENDING = FastName("BLENDING");
 
