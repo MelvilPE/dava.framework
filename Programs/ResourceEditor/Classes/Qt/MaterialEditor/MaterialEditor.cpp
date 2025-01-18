@@ -60,6 +60,7 @@ const DAVA::FastName Group("Group");
 const DAVA::FastName CustomCullMode("Cull Mode");
 
 const DAVA::FastName Base("Base");
+const DAVA::FastName Presets("Presets");
 const DAVA::FastName Flags("Flags");
 const DAVA::FastName Illumination("Illumination");
 const DAVA::FastName Properties("Properties");
@@ -68,6 +69,7 @@ const DAVA::FastName Textures("Textures");
 
 namespace NMaterialSectionName
 {
+const DAVA::FastName LocalPresets("localPresets");
 const DAVA::FastName LocalFlags("localFlags");
 const DAVA::FastName LocalProperties("localProperties");
 const DAVA::FastName LocalTextures("localTextures");
@@ -277,6 +279,7 @@ public:
         }
 
         std::unique_ptr<QtPropertyData> baseRoot = CreateHeader(UIName::Base);
+        std::unique_ptr<QtPropertyData> presetsRoot = CreateHeader(UIName::Presets);
         std::unique_ptr<QtPropertyData> flagsRoot = CreateHeader(UIName::Flags);
         std::unique_ptr<QtPropertyData> illuminationRoot = CreateHeader(UIName::Illumination);
         std::unique_ptr<QtPropertyData> propertiesRoot = CreateHeader(UIName::Properties);
@@ -284,6 +287,7 @@ public:
 
         foreach (DAVA::NMaterial* material, materials)
         {
+            DAVA::KeyedArchive* hiddenPresets = nullptr;
             DAVA::KeyedArchive* hiddenFlags = nullptr;
             DAVA::KeyedArchive* hiddenIllums = nullptr;
             DAVA::KeyedArchive* hiddenProps = nullptr;
@@ -301,6 +305,7 @@ public:
                 DAVA::KeyedArchive* templateArchive = editor->hiddenFieldsConfig->GetArchive(iter->second);
                 if (templateArchive != nullptr)
                 {
+                    hiddenPresets = templateArchive->GetArchive(UIName::Presets.c_str());
                     hiddenFlags = templateArchive->GetArchive(UIName::Flags.c_str());
                     hiddenIllums = templateArchive->GetArchive(UIName::Illumination.c_str());
                     hiddenProps = templateArchive->GetArchive(UIName::Properties.c_str());
@@ -309,6 +314,7 @@ public:
             }
 
             FillBase(baseRoot.get(), material);
+            FillDynamic(presetsRoot.get(), material, NMaterialSectionName::LocalPresets, hiddenPresets);
             FillDynamic(flagsRoot.get(), material, NMaterialSectionName::LocalFlags, hiddenFlags);
             FillIllumination(illuminationRoot.get(), material, hiddenIllums);
             FillDynamic(propertiesRoot.get(), material, NMaterialSectionName::LocalProperties, hiddenProps);
@@ -316,6 +322,7 @@ public:
         }
 
         ApplyTextureValidator(texturesRoot.get());
+        UpdateAllAddRemoveButtons(presetsRoot.get());
         UpdateAllAddRemoveButtons(flagsRoot.get());
         UpdateAllAddRemoveButtons(propertiesRoot.get());
         UpdateAllAddRemoveButtons(illuminationRoot.get());
@@ -325,6 +332,7 @@ public:
         FillInvalidTextures(texturesRoot.get(), materials);
 
         properties.push_back(std::move(baseRoot));
+        properties.push_back(std::move(presetsRoot));
         properties.push_back(std::move(flagsRoot));
         properties.push_back(std::move(illuminationRoot));
         properties.push_back(std::move(propertiesRoot));

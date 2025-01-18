@@ -3,6 +3,7 @@
 
 #include <memory>
 #include "NMaterialNames.h"
+#include "NMaterialStateDynamicPresetsInsp.h"
 #include "NMaterialStateDynamicFlagsInsp.h"
 #include "NMaterialStateDynamicPropertiesInsp.h"
 #include "NMaterialStateDynamicTexturesInsp.h"
@@ -54,6 +55,7 @@ struct MaterialConfig
     UnorderedMap<FastName, NMaterialProperty*> localProperties;
     UnorderedMap<FastName, MaterialTextureInfo*> localTextures;
     UnorderedMap<FastName, int32> localFlags; // integer flags are just more generic than boolean (eg. #if SHADING == HIGH), it has nothing in common with eFlagValue
+    UnorderedMap<FastName, bool> localPresets;
     rhi::CullMode customCullMode;
 };
 
@@ -260,6 +262,7 @@ public:
                   PROPERTY("fxName", "FX Name", GetLocalFXName, SetFXName, I_VIEW | I_EDIT)
                   PROPERTY("qualityGroup", "Quality group", GetQualityGroup, SetQualityGroup, I_VIEW | I_EDIT)
                   PROPERTY("customCullMode", "Cull Mode", GetCustomCullMode, SetCustomCullMode, I_VIEW | I_EDIT)
+                  DYNAMIC(localPresets, "Material presets", new NMaterialStateDynamicPresetsInsp(), I_EDIT | I_VIEW)
                   DYNAMIC(localFlags, "Material flags", new NMaterialStateDynamicFlagsInsp(), I_EDIT | I_VIEW)
                   DYNAMIC(localProperties, "Material properties", new NMaterialStateDynamicPropertiesInsp(), I_EDIT | I_VIEW)
                   DYNAMIC(localTextures, "Material textures", new NMaterialStateDynamicTexturesInsp(), I_EDIT | I_VIEW))
