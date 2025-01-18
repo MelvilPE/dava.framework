@@ -153,9 +153,17 @@ public:
     void SetFlag(const FastName& flagName, int32 value);
     bool HasLocalFlag(const FastName& flagName);
     const UnorderedMap<FastName, int32>& GetLocalFlags() const;
-
     int32 GetLocalFlagValue(const FastName& flagName);
     int32 GetEffectiveFlagValue(const FastName& flagName);
+
+    // presets
+    int32 GetEffectivePresetValue(const FastName& presetName);
+    bool HasLocalPreset(const FastName& presetName);
+    void RemovePreset(const FastName& presetName);
+    void SetPreset(const FastName& presetName, int32 value);
+    void AddPreset(const FastName& presetName, int32 value);
+    const UnorderedMap<FastName, bool>& GetLocalPresets() const;
+    bool GetLocalPresetValue(const FastName& presetName);
 
     void SetParent(NMaterial* parent);
     NMaterial* GetParent() const;

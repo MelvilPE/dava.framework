@@ -202,6 +202,8 @@ public:
     static const FastName FORCE_TRANCLUCENT_LAYER;
     static const FastName VERTEX_COLOR;
     static const FastName CULL_FRONT_DEPTH_GREATER;
+
+    static bool IsRuntimePreset(const FastName& preset);
 };
 
 class NMaterialFlagName

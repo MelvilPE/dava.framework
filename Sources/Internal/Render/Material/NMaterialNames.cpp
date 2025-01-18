@@ -186,6 +186,15 @@ const FastName NMaterialPresetName::FLOW_MAP = FastName("FLOW_MAP");
 const FastName NMaterialPresetName::FORCE_TRANCLUCENT_LAYER = FastName("FORCE_TRANCLUCENT_LAYER");
 const FastName NMaterialPresetName::VERTEX_COLOR = FastName("VERTEX_COLOR");
 const FastName NMaterialPresetName::CULL_FRONT_DEPTH_GREATER = FastName("CULL_FRONT_DEPTH_GREATER");
+Vector<FastName> RUNTIME_ONLY_PRESETS = {};
+bool NMaterialPresetName::IsRuntimePreset(const FastName& preset)
+{
+    auto it = std::find_if(RUNTIME_ONLY_PRESETS.begin(), RUNTIME_ONLY_PRESETS.end(), [&preset](const FastName& toFind)
+    {
+        return preset == toFind;
+    });
+    return it != RUNTIME_ONLY_PRESETS.end();
+}
 
 //flags
 const FastName NMaterialFlagName::FLAG_BLENDING = FastName("BLENDING");

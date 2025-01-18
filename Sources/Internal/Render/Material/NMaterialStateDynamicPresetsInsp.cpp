@@ -70,7 +70,7 @@ VariantType NMaterialStateDynamicPresetsInsp::MemberValueGet(const DynamicData& 
     DVASSERT(material);
 
     VariantType ret;
-    ret.SetBool(0 != material->GetEffectiveFlagValue(member));
+    ret.SetBool(0 != material->GetEffectivePresetValue(member));
     return ret;
 }
 
@@ -79,12 +79,12 @@ void NMaterialStateDynamicPresetsInsp::MemberValueSet(const DynamicData& ddata, 
     NMaterial* material = static_cast<NMaterial*>(ddata.object);
     DVASSERT(material);
 
-    // empty value is thread as flag remove
+    // empty value is thread as preset remove
     if (value.GetType() == VariantType::TYPE_NONE)
     {
-        if (material->HasLocalFlag(member))
+        if (material->HasLocalPreset(member))
         {
-            material->RemoveFlag(member);
+            material->RemovePreset(member);
         }
     }
     else
@@ -95,13 +95,13 @@ void NMaterialStateDynamicPresetsInsp::MemberValueSet(const DynamicData& ddata, 
             newValue = 1;
         }
 
-        if (material->HasLocalFlag(member))
+        if (material->HasLocalPreset(member))
         {
-            material->SetFlag(member, newValue);
+            material->SetPreset(member, newValue);
         }
         else
         {
-            material->AddFlag(member, newValue);
+            material->AddPreset(member, newValue);
         }
     }
 }
@@ -111,6 +111,6 @@ int NMaterialStateDynamicPresetsInsp::MemberFlags(const DynamicData& ddata, cons
     NMaterial* material = static_cast<NMaterial*>(ddata.object);
     DVASSERT(material);
 
-    return I_VIEW | (material->HasLocalFlag(member) ? I_EDIT : 0);
+    return I_VIEW | (material->HasLocalPreset(member) ? I_EDIT : 0);
 }
 };

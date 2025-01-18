@@ -581,6 +581,64 @@ bool NMaterial::HasLocalFlag(const FastName& flagName)
     return config.localFlags.find(flagName) != config.localFlags.end();
 }
 
+int32 NMaterial::GetEffectivePresetValue(const FastName& presetName)
+{
+    MaterialConfig& config = GetMutableCurrentConfig();
+    auto it = config.localPresets.find(presetName);
+    if (it != config.localPresets.end())
+        return it->second;
+    else if (parent)
+        return parent->GetEffectivePresetValue(presetName);
+    return 0;
+}
+
+bool NMaterial::HasLocalPreset(const FastName& presetName)
+{
+    MaterialConfig& config = GetMutableCurrentConfig();
+    return config.localPresets.find(presetName) != config.localPresets.end();
+}
+
+void NMaterial::RemovePreset(const FastName& presetName)
+{
+    MaterialConfig& config = GetMutableCurrentConfig();
+
+    DVASSERT(config.localPresets.find(presetName) != config.localPresets.end());
+
+    config.localPresets.erase(presetName);
+    InvalidateRenderVariants();
+}
+
+void NMaterial::SetPreset(const FastName& presetName, int32 value)
+{
+    MaterialConfig& config = GetMutableCurrentConfig();
+
+    DVASSERT(config.localPresets.find(presetName) != config.localPresets.end());
+
+    config.localPresets[presetName] = value;
+    InvalidateRenderVariants();
+}
+
+void NMaterial::AddPreset(const FastName& presetName, int32 value)
+{
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
+    MaterialConfig& config = GetMutableCurrentConfig();
+
+    DVASSERT(config.localPresets.find(presetName) == config.localPresets.end());
+
+    config.localPresets[presetName] = value;
+    InvalidateRenderVariants();
+}
+
+bool NMaterial::GetLocalPresetValue(const FastName& presetName)
+{
+    MaterialConfig& config = GetMutableCurrentConfig();
+
+    DVASSERT(config.localPresets.find(presetName) != config.localPresets.end());
+
+    return config.localPresets[presetName];
+}
+
 bool NMaterial::NeedLocalOverride(UniquePropertyLayout propertyLayout)
 {
     MaterialConfig& config = GetMutableCurrentConfig();
@@ -1189,6 +1247,14 @@ void NMaterial::SaveConfigToArchive(uint32 configId, KeyedArchive* archive, Seri
             flagsArchive->SetInt32(it->first.c_str(), it->second);
     }
     archive->SetArchive("flags", flagsArchive);
+
+    ScopedPtr<KeyedArchive> presetsArchive(new KeyedArchive());
+    for (auto it = config.localPresets.begin(), itEnd = config.localPresets.end(); it != itEnd; ++it)
+    {
+        if (!NMaterialPresetName::IsRuntimePreset(it->first))
+            presetsArchive->SetBool(it->first.c_str(), it->second);
+    }
+    archive->SetArchive("enabledPresets", presetsArchive);
 }
 
 void NMaterial::Save(KeyedArchive* archive, SerializationContext* serializationContext)
@@ -1297,6 +1363,15 @@ void NMaterial::LoadConfigFromArchive(uint32 configId, KeyedArchive* archive, Se
         for (KeyedArchive::UnderlyingMap::const_iterator it = flagsMap.begin(); it != flagsMap.end(); ++it)
         {
             config.localFlags[FastName(it->first)] = it->second->AsInt32();
+        }
+    }
+
+    if (archive->IsKeyExists("enabledPresets"))
+    {
+        const KeyedArchive::UnderlyingMap& presetsMap = archive->GetArchive("enabledPresets")->GetArchieveData();
+        for (KeyedArchive::UnderlyingMap::const_iterator it = presetsMap.begin(); it != presetsMap.end(); ++it)
+        {
+            config.localPresets[FastName(it->first)] = it->second->AsBool();
         }
     }
 }
@@ -1558,5 +1633,10 @@ void NMaterial::LoadOldNMaterial(KeyedArchive* archive, SerializationContext* se
 const UnorderedMap<FastName, int32>& NMaterial::GetLocalFlags() const
 {
     return GetCurrentConfig().localFlags;
+}
+
+const UnorderedMap<FastName, bool>& NMaterial::GetLocalPresets() const
+{
+    return GetCurrentConfig().localPresets;
 }
 };
