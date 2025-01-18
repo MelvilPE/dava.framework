@@ -284,6 +284,7 @@ const DAVA::String NMaterialSerializationKey::FXName = "fxName";
 const DAVA::String NMaterialSerializationKey::QualityGroup = "qualityGroup";
 const DAVA::String NMaterialSerializationKey::MaterialName = "materialName";
 const DAVA::String NMaterialSerializationKey::CustomCullMode = "customCullMode";
+const DAVA::String NMaterialSerializationKey::EnabledPresets = "enabledPresets";
 
 const DAVA::String NMaterialSerializationKey::ConfigName = "configName";
 const DAVA::String NMaterialSerializationKey::ConfigCount = "configCount";
