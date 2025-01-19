@@ -1205,7 +1205,7 @@ void NMaterial::SaveConfigToArchive(uint32 configId, KeyedArchive* archive, Seri
         }
     }
 
-    archive->SetUInt32(DAVA::NMaterialSerializationKey::CustomCullMode, config.customCullMode);
+    archive->SetUInt32(NMaterialSerializationKey::CustomCullMode, config.customCullMode);
 
     ScopedPtr<KeyedArchive> propertiesArchive(new KeyedArchive());
     for (auto it = config.localProperties.begin(), itEnd = config.localProperties.end(); it != itEnd; ++it)
@@ -1224,7 +1224,7 @@ void NMaterial::SaveConfigToArchive(uint32 configId, KeyedArchive* archive, Seri
 
         SafeDeleteArray(propertyStorage);
     }
-    archive->SetArchive("properties", propertiesArchive);
+    archive->SetArchive(NMaterialSerializationKey::PropertiesKey, propertiesArchive);
 
     ScopedPtr<KeyedArchive> texturesArchive(new KeyedArchive());
     for (auto it = config.localTextures.begin(), itEnd = config.localTextures.end(); it != itEnd; ++it)
@@ -1238,7 +1238,7 @@ void NMaterial::SaveConfigToArchive(uint32 configId, KeyedArchive* archive, Seri
             }
         }
     }
-    archive->SetArchive("textures", texturesArchive);
+    archive->SetArchive(NMaterialSerializationKey::TexturesKey, texturesArchive);
 
     ScopedPtr<KeyedArchive> flagsArchive(new KeyedArchive());
     for (auto it = config.localFlags.begin(), itEnd = config.localFlags.end(); it != itEnd; ++it)
@@ -1246,7 +1246,7 @@ void NMaterial::SaveConfigToArchive(uint32 configId, KeyedArchive* archive, Seri
         if (!NMaterialFlagName::IsRuntimeFlag(it->first))
             flagsArchive->SetInt32(it->first.c_str(), it->second);
     }
-    archive->SetArchive("flags", flagsArchive);
+    archive->SetArchive(NMaterialSerializationKey::FlagsKey, flagsArchive);
 
     ScopedPtr<KeyedArchive> presetsArchive(new KeyedArchive());
     for (auto it = config.localPresets.begin(), itEnd = config.localPresets.end(); it != itEnd; ++it)
@@ -1254,7 +1254,7 @@ void NMaterial::SaveConfigToArchive(uint32 configId, KeyedArchive* archive, Seri
         if (!NMaterialPresetName::IsRuntimePreset(it->first))
             presetsArchive->SetBool(it->first.c_str(), it->second);
     }
-    archive->SetArchive("enabledPresets", presetsArchive);
+    archive->SetArchive(NMaterialSerializationKey::EnabledPresets, presetsArchive);
 }
 
 void NMaterial::Save(KeyedArchive* archive, SerializationContext* serializationContext)
@@ -1318,9 +1318,9 @@ void NMaterial::LoadConfigFromArchive(uint32 configId, KeyedArchive* archive, Se
         config.name = FastName(archive->GetString(NMaterialSerializationKey::ConfigName));
     }
 
-    if (archive->IsKeyExists("properties"))
+    if (archive->IsKeyExists(NMaterialSerializationKey::PropertiesKey))
     {
-        const KeyedArchive::UnderlyingMap& propsMap = archive->GetArchive("properties")->GetArchieveData();
+        const KeyedArchive::UnderlyingMap& propsMap = archive->GetArchive(NMaterialSerializationKey::PropertiesKey)->GetArchieveData();
         for (KeyedArchive::UnderlyingMap::const_iterator it = propsMap.begin(); it != propsMap.end(); ++it)
         {
             const VariantType* propVariant = it->second;
@@ -1345,9 +1345,9 @@ void NMaterial::LoadConfigFromArchive(uint32 configId, KeyedArchive* archive, Se
         }
     }
 
-    if (archive->IsKeyExists("textures"))
+    if (archive->IsKeyExists(NMaterialSerializationKey::TexturesKey))
     {
-        const KeyedArchive::UnderlyingMap& texturesMap = archive->GetArchive("textures")->GetArchieveData();
+        const KeyedArchive::UnderlyingMap& texturesMap = archive->GetArchive(NMaterialSerializationKey::TexturesKey)->GetArchieveData();
         for (KeyedArchive::UnderlyingMap::const_iterator it = texturesMap.begin(); it != texturesMap.end(); ++it)
         {
             String relativePathname = it->second->AsString();
@@ -1357,18 +1357,18 @@ void NMaterial::LoadConfigFromArchive(uint32 configId, KeyedArchive* archive, Se
         }
     }
 
-    if (archive->IsKeyExists("flags"))
+    if (archive->IsKeyExists(NMaterialSerializationKey::FlagsKey))
     {
-        const KeyedArchive::UnderlyingMap& flagsMap = archive->GetArchive("flags")->GetArchieveData();
+        const KeyedArchive::UnderlyingMap& flagsMap = archive->GetArchive(NMaterialSerializationKey::FlagsKey)->GetArchieveData();
         for (KeyedArchive::UnderlyingMap::const_iterator it = flagsMap.begin(); it != flagsMap.end(); ++it)
         {
             config.localFlags[FastName(it->first)] = it->second->AsInt32();
         }
     }
 
-    if (archive->IsKeyExists("enabledPresets"))
+    if (archive->IsKeyExists(NMaterialSerializationKey::EnabledPresets))
     {
-        const KeyedArchive::UnderlyingMap& presetsMap = archive->GetArchive("enabledPresets")->GetArchieveData();
+        const KeyedArchive::UnderlyingMap& presetsMap = archive->GetArchive(NMaterialSerializationKey::EnabledPresets)->GetArchieveData();
         for (KeyedArchive::UnderlyingMap::const_iterator it = presetsMap.begin(); it != presetsMap.end(); ++it)
         {
             config.localPresets[FastName(it->first)] = it->second->AsBool();
@@ -1475,9 +1475,9 @@ void NMaterial::LoadOldNMaterial(KeyedArchive* archive, SerializationContext* se
         materialConfigs[0].fxName = materialTemplate.empty() ? FastName() : FastName(materialTemplate);
     }
 
-    if (archive->IsKeyExists("textures"))
+    if (archive->IsKeyExists(NMaterialSerializationKey::TexturesKey))
     {
-        const KeyedArchive::UnderlyingMap& texturesMap = archive->GetArchive("textures")->GetArchieveData();
+        const KeyedArchive::UnderlyingMap& texturesMap = archive->GetArchive(NMaterialSerializationKey::TexturesKey)->GetArchieveData();
         for (KeyedArchive::UnderlyingMap::const_iterator it = texturesMap.begin();
              it != texturesMap.end();
              ++it)
@@ -1534,9 +1534,9 @@ void NMaterial::LoadOldNMaterial(KeyedArchive* archive, SerializationContext* se
       { NMaterialParamName::PARAM_DECAL_TILE_SCALE }
     };
 
-    if (archive->IsKeyExists("properties"))
+    if (archive->IsKeyExists(NMaterialSerializationKey::PropertiesKey))
     {
-        const KeyedArchive::UnderlyingMap& propsMap = archive->GetArchive("properties")->GetArchieveData();
+        const KeyedArchive::UnderlyingMap& propsMap = archive->GetArchive(NMaterialSerializationKey::PropertiesKey)->GetArchieveData();
         for (KeyedArchive::UnderlyingMap::const_iterator it = propsMap.begin(); it != propsMap.end(); ++it)
         {
             const VariantType* propVariant = it->second;

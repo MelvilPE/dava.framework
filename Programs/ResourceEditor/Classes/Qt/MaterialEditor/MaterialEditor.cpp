@@ -465,14 +465,14 @@ private:
         const DAVA::InspInfo* info = material->GetTypeInfo();
 
         // fill material name
-        const DAVA::InspMember* nameMember = info->Member(DAVA::FastName("materialName"));
+        const DAVA::InspMember* nameMember = info->Member(DAVA::FastName(DAVA::NMaterialSerializationKey::MaterialName));
         if (nullptr != nameMember)
         {
             baseRoot->MergeChild(std::unique_ptr<QtPropertyData>(new QtPropertyDataInspMember(UIName::Name, material, nameMember)));
         }
 
         // fill material group, only for material type
-        const DAVA::InspMember* groupMember = info->Member(DAVA::FastName("qualityGroup"));
+        const DAVA::InspMember* groupMember = info->Member(DAVA::FastName(DAVA::NMaterialSerializationKey::QualityGroup));
         if ((nullptr != groupMember) && (globalMaterial != material))
         {
             QtPropertyDataInspMember* group = new QtPropertyDataInspMember(UIName::Group, material, groupMember);
@@ -490,7 +490,7 @@ private:
         }
 
         // fill custom cull mode
-        const DAVA::InspMember* customCullModeMember = info->Member(DAVA::FastName("customCullMode"));
+        const DAVA::InspMember* customCullModeMember = info->Member(DAVA::FastName(DAVA::NMaterialSerializationKey::CustomCullMode));
         if (nullptr != customCullModeMember)
         {
             QtPropertyDataInspMember* dataInsp = new QtPropertyDataInspMember(UIName::CustomCullMode, material, customCullModeMember);
@@ -1248,7 +1248,7 @@ void MaterialEditor::OnTemplateChanged(int index)
         QString newTemplatePath = GetTemplatePath(index);
         if (!newTemplatePath.isEmpty())
         {
-            const DAVA::InspMember* templateMember = material->GetTypeInfo()->Member(DAVA::FastName("fxName"));
+            const DAVA::InspMember* templateMember = material->GetTypeInfo()->Member(DAVA::FastName(DAVA::NMaterialSerializationKey::FXName));
 
             if (nullptr != templateMember)
             {
@@ -1266,7 +1266,7 @@ void MaterialEditor::OnTemplateButton()
     if (1 == curMaterials.size())
     {
         DAVA::NMaterial* material = curMaterials[0];
-        const DAVA::InspMember* templateMember = material->GetTypeInfo()->Member(DAVA::FastName("fxName"));
+        const DAVA::InspMember* templateMember = material->GetTypeInfo()->Member(DAVA::FastName(DAVA::NMaterialSerializationKey::FXName));
 
         if (nullptr != templateMember)
         {

@@ -325,6 +325,9 @@ bool NMaterialTextureName::IsRuntimeTexture(const FastName& texture)
 const DAVA::String NMaterialSerializationKey::MaterialKey = "materialKey";
 const DAVA::String NMaterialSerializationKey::ParentMaterialKey = "parentMaterialKey";
 const DAVA::String NMaterialSerializationKey::FXName = "fxName";
+const DAVA::String NMaterialSerializationKey::PropertiesKey = "properties";
+const DAVA::String NMaterialSerializationKey::TexturesKey = "textures";
+const DAVA::String NMaterialSerializationKey::FlagsKey = "flags";
 const DAVA::String NMaterialSerializationKey::QualityGroup = "qualityGroup";
 const DAVA::String NMaterialSerializationKey::MaterialName = "materialName";
 const DAVA::String NMaterialSerializationKey::CustomCullMode = "customCullMode";

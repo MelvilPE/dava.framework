@@ -295,6 +295,9 @@ public:
     static const DAVA::String MaterialKey;
     static const DAVA::String ParentMaterialKey;
     static const DAVA::String FXName;
+    static const DAVA::String PropertiesKey;
+    static const DAVA::String TexturesKey;
+    static const DAVA::String FlagsKey;
     static const DAVA::String QualityGroup;
     static const DAVA::String MaterialName;
     static const DAVA::String ConfigName;
