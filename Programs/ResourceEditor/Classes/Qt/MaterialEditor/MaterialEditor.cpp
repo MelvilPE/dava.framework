@@ -497,6 +497,7 @@ private:
             baseRoot->MergeChild(std::unique_ptr<QtPropertyData>(dataInsp));
 
             // Add available custom cull modes:
+            dataInsp->AddAllowedValue(DAVA::VariantType(rhi::CullMode::CULL_MODE_COUNT), "DEFAULT");
             dataInsp->AddAllowedValue(DAVA::VariantType(rhi::CullMode::CULL_NONE), "NONE");
             dataInsp->AddAllowedValue(DAVA::VariantType(rhi::CullMode::CULL_CCW), "FACE_FRONT");
             dataInsp->AddAllowedValue(DAVA::VariantType(rhi::CullMode::CULL_CW), "FACE_BACK");

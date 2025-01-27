@@ -1205,7 +1205,10 @@ void NMaterial::SaveConfigToArchive(uint32 configId, KeyedArchive* archive, Seri
         }
     }
 
-    archive->SetUInt32(NMaterialSerializationKey::CustomCullMode, config.customCullMode);
+    if (config.customCullMode != rhi::CullMode::CULL_MODE_COUNT)
+    {
+        archive->SetUInt32(NMaterialSerializationKey::CustomCullMode, config.customCullMode);
+    }
 
     ScopedPtr<KeyedArchive> propertiesArchive(new KeyedArchive());
     for (auto it = config.localProperties.begin(), itEnd = config.localProperties.end(); it != itEnd; ++it)
@@ -1304,13 +1307,14 @@ void NMaterial::LoadConfigFromArchive(uint32 configId, KeyedArchive* archive, Se
         config.fxName = FastName(archive->GetString(NMaterialSerializationKey::FXName));
     }
 
+    config.customCullMode = rhi::CullMode::CULL_MODE_COUNT;
     if (archive->IsKeyExists(NMaterialSerializationKey::CustomCullMode))
     {
-        config.customCullMode = static_cast<rhi::CullMode>(archive->GetUInt32(NMaterialSerializationKey::CustomCullMode, rhi::CullMode::CULL_NONE));
-    }
-    else
-    {
-        config.customCullMode = rhi::CullMode::CULL_NONE;
+        rhi::CullMode customCullMode = static_cast<rhi::CullMode>(archive->GetUInt32(NMaterialSerializationKey::CustomCullMode));
+        if (customCullMode != rhi::CullMode::CULL_MODE_COUNT)
+        {
+            config.customCullMode = customCullMode;
+        }
     }
 
     if (archive->IsKeyExists(NMaterialSerializationKey::ConfigName))
