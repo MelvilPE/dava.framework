@@ -55,7 +55,7 @@ void SaveConfigToArchive(const DAVA::FilePath& sceneDirPath, const DAVA::Materia
 
         SafeDeleteArray(propertyStorage);
     }
-    archive->SetArchive("properties", propertiesArchive);
+    archive->SetArchive(NMaterialSerializationKey::PropertiesKey, propertiesArchive);
 
     ScopedPtr<KeyedArchive> texturesArchive(new KeyedArchive());
     for (const auto& texturePair : config.localTextures)
@@ -69,7 +69,7 @@ void SaveConfigToArchive(const DAVA::FilePath& sceneDirPath, const DAVA::Materia
             }
         }
     }
-    archive->SetArchive("textures", texturesArchive);
+    archive->SetArchive(NMaterialSerializationKey::TexturesKey, texturesArchive);
 
     ScopedPtr<KeyedArchive> flagsArchive(new KeyedArchive());
     for (const auto& flagPair : config.localFlags)
@@ -77,7 +77,7 @@ void SaveConfigToArchive(const DAVA::FilePath& sceneDirPath, const DAVA::Materia
         if (!NMaterialFlagName::IsRuntimeFlag(flagPair.first))
             flagsArchive->SetInt32(flagPair.first.c_str(), flagPair.second);
     }
-    archive->SetArchive("flags", flagsArchive);
+    archive->SetArchive(NMaterialSerializationKey::FlagsKey, flagsArchive);
 }
 
 void SaveMaterial(const DAVA::FilePath& sceneDirPath, DAVA::NMaterial* material, DAVA::RefPtr<DAVA::KeyedArchive> archive)
@@ -118,9 +118,9 @@ void LoadConfigFromArchive(const DAVA::FilePath& sceneDirPath, DAVA::MaterialCon
         config.name = FastName(archive->GetString(NMaterialSerializationKey::ConfigName));
     }
 
-    if (archive->IsKeyExists("properties"))
+    if (archive->IsKeyExists(NMaterialSerializationKey::PropertiesKey))
     {
-        const KeyedArchive::UnderlyingMap& propsMap = archive->GetArchive("properties")->GetArchieveData();
+        const KeyedArchive::UnderlyingMap& propsMap = archive->GetArchive(NMaterialSerializationKey::PropertiesKey)->GetArchieveData();
         for (const auto& iter : propsMap)
         {
             const VariantType* propVariant = iter.second;
@@ -145,9 +145,9 @@ void LoadConfigFromArchive(const DAVA::FilePath& sceneDirPath, DAVA::MaterialCon
         }
     }
 
-    if (archive->IsKeyExists("textures"))
+    if (archive->IsKeyExists(NMaterialSerializationKey::TexturesKey))
     {
-        const KeyedArchive::UnderlyingMap& texturesMap = archive->GetArchive("textures")->GetArchieveData();
+        const KeyedArchive::UnderlyingMap& texturesMap = archive->GetArchive(NMaterialSerializationKey::TexturesKey)->GetArchieveData();
         for (const auto& iter : texturesMap)
         {
             String relativePathname = iter.second->AsString();
@@ -157,9 +157,9 @@ void LoadConfigFromArchive(const DAVA::FilePath& sceneDirPath, DAVA::MaterialCon
         }
     }
 
-    if (archive->IsKeyExists("flags"))
+    if (archive->IsKeyExists(NMaterialSerializationKey::FlagsKey))
     {
-        const KeyedArchive::UnderlyingMap& flagsMap = archive->GetArchive("flags")->GetArchieveData();
+        const KeyedArchive::UnderlyingMap& flagsMap = archive->GetArchive(NMaterialSerializationKey::FlagsKey)->GetArchieveData();
         for (const auto& iter : flagsMap)
         {
             config.localFlags[FastName(iter.first)] = iter.second->AsInt32();
