@@ -73,12 +73,14 @@ MaterialConfig::MaterialConfig()
     : localProperties(16)
     , localTextures(8)
     , localFlags(16)
+    , customCullMode(rhi::CullMode::CULL_MODE_COUNT)
 {
 }
 MaterialConfig::MaterialConfig(const MaterialConfig& config)
     : localProperties(16)
     , localTextures(8)
     , localFlags(16)
+    , customCullMode(rhi::CullMode::CULL_MODE_COUNT)
 {
     operator=(config);
 }
@@ -89,6 +91,7 @@ MaterialConfig& MaterialConfig::operator=(const MaterialConfig& config)
     name = config.name;
     fxName = config.fxName;
     localFlags = config.localFlags;
+    customCullMode = config.customCullMode;
     for (auto& tex : config.localTextures)
     {
         MaterialTextureInfo* texInfo = new MaterialTextureInfo();
