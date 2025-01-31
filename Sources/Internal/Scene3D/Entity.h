@@ -31,41 +31,128 @@ class Entity : public BaseObject
     DAVA_VIRTUAL_REFLECTION(Entity, BaseObject);
 
 protected:
+    /**
+     * @brief Virtual destructor for the Entity class
+     * 
+     * Ensures proper cleanup of derived classes when deleting through a pointer to the base class.
+     * All resources allocated by the entity and its components will be released.
+     */
     virtual ~Entity();
 
 public:
+    /**
+     * @brief Default constructor that creates an empty Entity.
+     * 
+     * An Entity is a fundamental building block in the scene graph hierarchy.
+     * It can hold components and can be used as a container for other entities.
+     */
     Entity();
 
     /**
         Return scene of this entity or nullptr if this entity is not in scene.
     */
     virtual Scene* GetScene();
-
-    //components
+    
+    /**
+     * @brief Adds a component to the entity
+     * @param[in] component Pointer to the component to be added
+     * @details The component will be owned by this entity. The entity takes responsibility 
+     *          for the component's memory management. If the entity already has a component 
+     *          of the same type, the behavior is undefined.
+     * @warning The passed component pointer must not be null and must be allocated on heap
+     */
     void AddComponent(Component* component);
 
+    /**
+     * @brief Removes a component from the entity
+     * @param[in] component Pointer to the component to be removed from the entity
+     *
+     * Removes the specified component from this entity. If the component doesn't exist
+     * in the entity, the function has no effect. The component's memory management
+     * remains the responsibility of the caller.
+     */
     void RemoveComponent(Component* component);
+    /**
+     * @brief Removes a component of specified type from the entity
+     * @param[in] type Pointer to the type of component to remove
+     * @param[in] index Index of the component if multiple components of same type exist (default: 0)
+     */
     void RemoveComponent(const Type* type, uint32 index = 0);
+    
+    /**
+     * @brief Removes a component from the entity at the specified index
+     * @param[in] index The index of the component to remove (default: 0)
+     * @details If the component exists at the given index, it will be destroyed and removed from the entity.
+     *          If no component exists at the given index, the call has no effect.
+     */
     template <typename T>
     void RemoveComponent(uint32 index = 0);
 
+    /**
+     * @brief Detaches the specified component from the entity.
+     * 
+     * @param[in] component Pointer to the component that should be detached. Must not be nullptr.
+     * 
+     * @details This function removes the given component from the entity's component list.
+     * The component will no longer be associated with this entity after the call.
+     * Note that this function does not delete the component, it only removes the association.
+     */
     void DetachComponent(Component* component);
 
+    /**
+     * @brief Gets a component of the specified type from the entity.
+     * @param type The type of component to retrieve.
+     * @param index Index of the component to retrieve if multiple components of the same type exist (default is 0).
+     * @return Pointer to the component if found, nullptr otherwise.
+     */
     Component* GetComponent(const Type* type, uint32 index = 0) const;
+    /**
+     * Gets a component of type T at the specified index
+     * @tparam T The type of component to get
+     * @param[in] index Index of the component to retrieve (default: 0)
+     * @return Pointer to the component if found, nullptr otherwise
+     */
     template <typename T>
     T* GetComponent(uint32 index = 0) const;
 
+    /**
+     * Gets existing component or creates new one if it doesn't exist
+     * @param type Type of the component to get or create
+     * @param index Index of the component (useful when multiple components of the same type are allowed)
+     * @return Pointer to the requested component. If component was created, returns pointer to new component
+     */
     Component* GetOrCreateComponent(const Type* type, uint32 index = 0);
     template <typename T>
+    /**
+     * @brief Gets existing component or creates new one if it doesn't exist
+     * @tparam T Type of the component to get or create
+     * @param index Index of the component if multiple components of the same type exist
+     * @return Pointer to the component of type T
+     */
     T* GetOrCreateComponent(uint32 index = 0);
 
+    /**
+     * Returns the total number of components attached to this entity.
+     * @return The count of components currently attached to the entity.
+     */
     uint32 GetComponentCount() const;
+    /**
+     * Gets the number of components of the specified type attached to this entity.
+     * @param[in] type Pointer to the type of components to count.
+     * @return The number of components of the specified type.
+     */
     uint32 GetComponentCount(const Type* type) const;
     template <typename T>
+    /**
+     * @return The total number of components attached to this entity
+     */
     uint32 GetComponentCount() const;
+    /**
+     * @brief Returns a bit mask representing all components that are currently available on this entity.
+     * @return Const reference to the ComponentMask containing the availability status of all components.
+     */
     inline const ComponentMask& GetAvailableComponentMask() const;
 
-    // working with children
     virtual void AddNode(Entity* node);
     virtual void RemoveNode(Entity* node);
     virtual void InsertBeforeNode(Entity* newNode, Entity* beforeNode);
@@ -106,7 +193,15 @@ public:
     */
     Entity* GetEntityByID(uint32 id);
 
+    /**
+     * @brief Sets the scene identifier for the entity
+     * @param sceneId Unique identifier of the scene to which this entity will be assigned
+     */
     void SetSceneID(uint32 sceneId);
+    /**
+     * @brief Returns the unique scene identifier of the entity.
+     * @return Unique identifier of the scene to which this entity belongs.
+     */
     uint32 GetSceneID() const;
 
     /**

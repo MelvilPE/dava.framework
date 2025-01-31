@@ -17,10 +17,16 @@ class StaticOcclusionDataComponent;
 class StaticOcclusionDebugDrawComponent;
 class NMaterial;
 
-// System that allow to build occlusion information. Required only in editor.
+/**
+ * @brief System that allows building occlusion information. Required only in editor.
+ */
 class StaticOcclusionBuildSystem : public SceneSystem
 {
 public:
+    /**
+     * @brief Constructor
+     * @param scene Parent scene
+     */
     StaticOcclusionBuildSystem(Scene* scene);
     ~StaticOcclusionBuildSystem() override;
 
@@ -32,11 +38,32 @@ public:
 
     void SetCamera(Camera* camera);
 
+    /**
+     * @brief Begin building occlusion data
+     */
     void Build();
+    
+    /**
+     * @brief Cancel current build process
+     */
     void Cancel();
 
+    /**
+     * @brief Check if system is currently building occlusion
+     * @return true if build is in progress
+     */
     bool IsInBuild() const;
+    
+    /**
+     * @brief Get current build status
+     * @return Status code of current build
+     */
     uint32 GetBuildStatus() const;
+    
+    /**
+     * @brief Get string description of build status
+     * @return Status description
+     */
     const String& GetBuildStatusInfo() const;
 
 private:

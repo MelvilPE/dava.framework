@@ -12,7 +12,15 @@ namespace DAVA
 class Drawable
 {
 public:
+    /**
+     * @brief Pure virtual method to draw the object
+     */
     virtual void Draw() = 0;
+
+    /**
+     * @brief Pure virtual method to get sort identifier
+     * @return Sorting identifier for the drawable
+     */
     virtual uint64 GetSortID() = 0;
 };
 };

@@ -30,6 +30,9 @@ class SlotComponent;
 class SlotSystem final : public SceneSystem
 {
 public:
+    /**
+     * @brief Cache for parsed item configuration data
+     */
     class ItemsCache
     {
     public:
@@ -41,8 +44,20 @@ public:
             RefPtr<KeyedArchive> additionalParams;
         };
 
+        /**
+         * @brief Load and parse a configuration file
+         * @param configPath Path to config file
+         */
         void LoadConfigFile(const FilePath& configPath);
+        
+        /**
+         * @brief Look up an item by name in a config
+         * @param configPath Config file path
+         * @param itemName Name of item to find
+         * @return Pointer to found item or nullptr
+         */
         const Item* LookUpItem(const FilePath& configPath, FastName itemName);
+        
         Vector<Item> GetItems(const FilePath& configPath);
         void InvalidateConfig(const FilePath& configPath);
         bool IsConfigParsed(const FilePath& configPath) const;
@@ -59,7 +74,9 @@ public:
         UnorderedMap<String, Set<Item, ItemLess>> cachedItems;
     };
 
-    /** \brief Class that SlotSystem delegates loading of item */
+    /** 
+     * @brief Class that handles loading of external entities
+     */ 
     class ExternalEntityLoader : public std::enable_shared_from_this<ExternalEntityLoader>
     {
     public:
