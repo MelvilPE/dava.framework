@@ -367,6 +367,8 @@ private:
      * @param level The current depth level in the hierarchy
      * @return true if hierarchy was saved successfully, false otherwise
      */
+    bool SaveHierarchy(Entity* node, File* file, int32 level);
+
     bool LoadHierarchy(Scene* scene, Entity* node, File* file, int32 level);
 
     /**

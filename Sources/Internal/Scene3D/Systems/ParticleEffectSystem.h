@@ -381,6 +381,6 @@ inline void ParticleEffectSystem::SetAllowLodDegrade(bool allowDegrade)
  */
 inline bool ParticleEffectSystem::GetAllowLodDegrade() const
 {
-    return allowDegrade;
+    return allowLodDegrade;
 }
 };
