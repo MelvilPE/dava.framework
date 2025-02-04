@@ -38,7 +38,7 @@ DAVA_DEPRECATED(void FixDX11CompressionFormat(TextureDescriptor& descriptor))
         if (descriptor.compression[GPU_DX11].format == FORMAT_RGB888)
         {
             descriptor.compression[GPU_DX11].Clear();
-            Logger::Error("[TextureDescriptor] Texture %s has unsupported RGB888 format for GPU_DX11", descriptor.pathname.GetStringValue().c_str());
+            Logger::Warning("[TextureDescriptor] Texture %s has unsupported RGB888 format for GPU_DX11", descriptor.pathname.GetStringValue().c_str());
         }
     }
 }
@@ -218,7 +218,7 @@ TextureDescriptor* TextureDescriptor::CreateFromFile(const FilePath& filePathnam
     TextureDescriptor* descriptor = new TextureDescriptor();
     if (!descriptor->Initialize(filePathname))
     {
-        Logger::Error("[TextureDescriptor::CreateFromFile(]: there are no descriptor file (%s).", filePathname.GetAbsolutePathname().c_str());
+        Logger::Warning("[TextureDescriptor::CreateFromFile(]: there are no descriptor file (%s).", filePathname.GetAbsolutePathname().c_str());
         delete descriptor;
         return nullptr;
     }
@@ -324,7 +324,7 @@ bool TextureDescriptor::Load(const FilePath& filePathname)
     ScopedPtr<File> file(File::Create(filePathname, File::READ | File::OPEN));
     if (!file)
     {
-        Logger::Error("[TextureDescriptor::Load] Can't open file: %s", filePathname.GetAbsolutePathname().c_str());
+        Logger::Warning("[TextureDescriptor::Load] Can't open file: %s", filePathname.GetAbsolutePathname().c_str());
         return false;
     }
 
@@ -346,7 +346,7 @@ bool TextureDescriptor::Load(const FilePath& filePathname)
     }
     else
     {
-        Logger::Error("[TextureDescriptor::Load] Signature '%X' is incorrect", signature);
+        Logger::Warning("[TextureDescriptor::Load] Signature '%X' is incorrect", signature);
         return false;
     }
 
@@ -378,7 +378,7 @@ bool TextureDescriptor::Load(const FilePath& filePathname)
         break;
     default:
     {
-        Logger::Error("[TextureDescriptor::Load] Version %d is not supported", version);
+        Logger::Warning("[TextureDescriptor::Load] Version %d is not supported", version);
         return false;
     }
     }
@@ -409,7 +409,7 @@ void TextureDescriptor::Save(const FilePath& filePathname) const
     ScopedPtr<File> file(File::Create(filePathname, File::WRITE | File::CREATE));
     if (!file)
     {
-        Logger::Error("[TextureDescriptor::Save] Can't open file: %s", filePathname.GetAbsolutePathname().c_str());
+        Logger::Warning("[TextureDescriptor::Save] Can't open file: %s", filePathname.GetAbsolutePathname().c_str());
         return;
     }
 
@@ -421,7 +421,7 @@ void TextureDescriptor::Export(const FilePath& filePathname, eGPUFamily forGPU) 
     ScopedPtr<File> file(File::Create(filePathname, File::WRITE | File::OPEN | File::CREATE));
     if (!file)
     {
-        Logger::Error("[TextureDescriptor::Export] Can't open file: %s", filePathname.GetAbsolutePathname().c_str());
+        Logger::Warning("[TextureDescriptor::Export] Can't open file: %s", filePathname.GetAbsolutePathname().c_str());
         return;
     }
 
@@ -1030,7 +1030,7 @@ uint32 TextureDescriptor::GetConvertedCRC(eGPUFamily forGPU) const
     if (imageFormat == IMAGE_FORMAT_PVR)
     {
 #ifdef __DAVAENGINE_WIN_UAP__
-        Logger::Error("[TextureDescriptor::GetConvertedCRC] can't get compressed texture filename for %s; "
+        Logger::Warning("[TextureDescriptor::GetConvertedCRC] can't get compressed texture filename for %s; "
                       "LibPVR is unsupported",
                       filePath.GetStringValue().c_str());
         DVASSERT(false);
@@ -1055,7 +1055,7 @@ uint32 TextureDescriptor::GetConvertedCRC(eGPUFamily forGPU) const
     }
     else
     {
-        Logger::Error("[TextureDescriptor::GetConvertedCRC] can't get compressed texture filename for %s", filePath.GetStringValue().c_str());
+        Logger::Warning("[TextureDescriptor::GetConvertedCRC] can't get compressed texture filename for %s", filePath.GetStringValue().c_str());
         DVASSERT(false);
         return 0;
     }
@@ -1133,7 +1133,7 @@ ImageFormat TextureDescriptor::GetImageFormatForGPU(eGPUFamily forGPU) const
     bool imageFormatIsValid = (ImageFormat::IMAGE_FORMAT_UNKNOWN == retValue) || ((ImageFormat::IMAGE_FORMAT_PNG <= retValue) && (retValue < ImageFormat::IMAGE_FORMAT_COUNT));
     if (imageFormatIsValid == false)
     {
-        Logger::Error("[%s] Seems that file is corrupted, %s", __FUNCTION__, pathname.GetStringValue().c_str());
+        Logger::Warning("[%s] Seems that file is corrupted, %s", __FUNCTION__, pathname.GetStringValue().c_str());
         return ImageFormat::IMAGE_FORMAT_UNKNOWN;
     }
 
@@ -1251,7 +1251,7 @@ bool TextureDescriptor::IsPresetValid(const KeyedArchive* presetArchive) const
     const String object = presetArchive->GetString("object");
     if (object != "TextureDescriptor")
     {
-        Logger::Error("Cannot load %s archive as TextureDescriptor preset", object.c_str());
+        Logger::Warning("Cannot load %s archive as TextureDescriptor preset", object.c_str());
         return false;
     }
 
@@ -1262,14 +1262,14 @@ bool TextureDescriptor::IsPresetValid(const KeyedArchive* presetArchive) const
     }
     else if (version > CURRENT_VERSION)
     {
-        Logger::Error("Trying to load newer version %d than have %d", version, CURRENT_VERSION);
+        Logger::Warning("Trying to load newer version %d than have %d", version, CURRENT_VERSION);
         return false;
     }
 
     const uint8 cubefaceFlags = presetArchive->GetInt32("cubefaceFlags");
     if (cubefaceFlags != dataSettings.cubefaceFlags)
     {
-        Logger::Error("Cannot apply preset with different cubefaceFlags");
+        Logger::Warning("Cannot apply preset with different cubefaceFlags");
         return false;
     }
 
