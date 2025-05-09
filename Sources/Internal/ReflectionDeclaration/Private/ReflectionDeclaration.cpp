@@ -18,6 +18,7 @@
 #include "Scene3D/Components/BulletComponent.h"
 #include "Scene3D/Components/CameraComponent.h"
 #include "Scene3D/Components/CustomPropertiesComponent.h"
+#include "Scene3D/Components/UnregisteredComponent.h"
 #include "Scene3D/Components/DebugRenderComponent.h"
 #include "Scene3D/Components/LightComponent.h"
 #include "Scene3D/Components/MotionComponent.h"
@@ -306,6 +307,7 @@ void RegisterPermanentNames()
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(BulletComponent);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(CameraComponent);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(CustomPropertiesComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UnregisteredComponent);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(DebugRenderComponent);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(LightComponent);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(ParticleEffectComponent);

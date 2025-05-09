@@ -24,6 +24,7 @@
 #include "Scene3D/Components/AnimationComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Components/CustomPropertiesComponent.h"
+#include "Scene3D/Components/UnregisteredComponent.h"
 #include "Scene3D/Private/EntityHelpers.h"
 #include "Reflection/ReflectionRegistrator.h"
 
@@ -550,6 +551,12 @@ void Entity::LoadComponentsV7(KeyedArchive* compsArch, SerializationContext* ser
                         RemoveComponent(comp->GetType());
                     }
 
+                    AddComponent(comp);
+                    comp->Deserialize(compArch, serializationContext);
+                }
+                else
+                {
+                    UnregisteredComponent* comp = new UnregisteredComponent();
                     AddComponent(comp);
                     comp->Deserialize(compArch, serializationContext);
                 }

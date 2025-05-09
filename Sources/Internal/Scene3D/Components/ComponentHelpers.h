@@ -24,6 +24,7 @@ class TransformComponent;
 class RenderComponent;
 class VegetationRenderObject;
 class CustomPropertiesComponent;
+class UnregisteredComponent;
 class KeyedArchive;
 class SpeedTreeComponent;
 class WindComponent;
