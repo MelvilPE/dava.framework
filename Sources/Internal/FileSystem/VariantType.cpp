@@ -1169,6 +1169,65 @@ bool VariantType::Write(File* fp) const
         }
     }
     break;
+    case TYPE_RECT:
+    {
+        written = fp->Write(rectValue, sizeof(Rect));
+        if (written != sizeof(Rect))
+        {
+            return false;
+        }
+    }
+    break;
+    case TYPE_VARIANT_VECTOR:
+    {
+        Vector<VariantType> variants = *variantVectorValue;
+        uint32 variantsLength = static_cast<uint32>(variants.size());
+
+        written = fp->Write(&variantsLength, sizeof(uint32));
+        if (written != sizeof(uint32))
+        {
+            return false;
+        }
+
+        for (uint32 variantIndex = 0; variantIndex < variantsLength; variantIndex++)
+        {
+            VariantType variant = variants[variantIndex];
+            if (!variant.Write(fp))
+            {
+                return false;
+            }
+        }
+    }
+    break;
+    case TYPE_QUATERNION:
+    {
+        written = fp->Write(quaternionValue, sizeof(Quaternion));
+        if (written != sizeof(Quaternion))
+        {
+            return false;
+        }
+    }
+    break;
+    case TYPE_TRANSFORM:
+    {
+        written = fp->Write(transformValue, sizeof(Transform));
+        if (written != sizeof(Transform))
+        {
+            return false;
+        }
+    }
+    break;
+    case TYPE_AABBOX2:
+    {
+        written = fp->Write(aabbox2Value, sizeof(AABBox2));
+        if (written != sizeof(AABBox2))
+        {
+            return false;
+        }
+    }
+    break;
+
+
     default:
     {
         DVASSERT(false, "Writing wrong variant type");
@@ -1496,6 +1555,69 @@ bool VariantType::Read(File* fp)
         filepathValue = new FilePath(buf.data());
         return (read == len);
     }
+    case TYPE_RECT:
+    {
+        rectValue = new Rect;
+        read = fp->Read(rectValue, sizeof(Rect));
+        if (read != sizeof(Rect))
+        {
+            return false;
+        }
+    }
+    break;
+    case TYPE_VARIANT_VECTOR:
+    {
+        variantVectorValue = new Vector<VariantType>();
+        uint32 variantsLength = 0;
+
+        read = fp->Read(&variantsLength, sizeof(uint32));
+        if (read != sizeof(uint32))
+        {
+            return false;
+        }
+
+        for (uint32 variantIndex = 0; variantIndex < variantsLength; variantIndex++)
+        {
+            VariantType variant;
+            if (!variant.Read(fp))
+            {
+                return false;
+            }
+
+            variantVectorValue->push_back(variant);
+        }
+    }
+    break;
+    case TYPE_QUATERNION:
+    {
+        quaternionValue = new Quaternion;
+        read = fp->Read(quaternionValue, sizeof(Quaternion));
+        if (read != sizeof(Quaternion))
+        {
+            return false;
+        }
+    }
+    break;
+    case TYPE_TRANSFORM:
+    {
+        transformValue = new Transform;
+        read = fp->Read(transformValue, sizeof(Transform));
+        if (read != sizeof(Transform))
+        {
+            return false;
+        }
+    }
+    break;
+    case TYPE_AABBOX2:
+    {
+        aabbox2Value = new AABBox2;
+        read = fp->Read(aabbox2Value, sizeof(AABBox2));
+        if (read != sizeof(AABBox2))
+        {
+            return false;
+        }
+    }
+    break;
     default:
     {
         return false;
