@@ -3,6 +3,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Debug/DVAssert.h"
+#include "Math/Transform.h"
 
 namespace DAVA
 {
@@ -24,6 +25,11 @@ class KeyedArchive;
 class FastName;
 class AABBox3;
 class FilePath;
+
+struct Rect;
+class Quaternion;
+class Transform;
+class AABBox2;
 
 /**
  \ingroup filesystem
@@ -62,6 +68,12 @@ public:
     static const String TYPENAME_INT16; // "int16"
     static const String TYPENAME_UINT16; // "uint16"
 
+    static const String TYPENAME_RECT; // "Rect"
+    static const String TYPENAME_VARIANT_VECTOR; // "variantVector"
+    static const String TYPENAME_QUATERNION; // "Quaternion"
+    static const String TYPENAME_TRANSFORM; // "Rect"
+    static const String TYPENAME_AABBOX2; // "AABBox2"
+
     VariantType();
     VariantType(const VariantType& value);
     VariantType(VariantType&& value);
@@ -91,38 +103,48 @@ public:
     explicit VariantType(const FastName& value);
     explicit VariantType(const AABBox3& value);
     explicit VariantType(const FilePath& value);
+    explicit VariantType(const Rect& value);
+    explicit VariantType(const Vector<VariantType>& value);
+    explicit VariantType(const Quaternion& value);
+    explicit VariantType(const Transform& value);
+    explicit VariantType(const AABBox2& value);
 
     ~VariantType();
 
     enum eVariantType : uint8
     {
-        TYPE_NONE = 0,
-        TYPE_BOOLEAN,
-        TYPE_INT32,
-        TYPE_FLOAT,
-        TYPE_STRING,
-        TYPE_WIDE_STRING,
-        TYPE_BYTE_ARRAY,
-        TYPE_UINT32,
-        TYPE_KEYED_ARCHIVE,
-        TYPE_INT64,
-        TYPE_UINT64,
-        TYPE_VECTOR2,
-        TYPE_VECTOR3,
-        TYPE_VECTOR4,
-        TYPE_MATRIX2,
-        TYPE_MATRIX3,
-        TYPE_MATRIX4,
-        TYPE_COLOR,
-        TYPE_FASTNAME,
-        TYPE_AABBOX3,
-        TYPE_FILEPATH,
-        TYPE_FLOAT64,
-        TYPE_INT8,
-        TYPE_UINT8,
-        TYPE_INT16,
-        TYPE_UINT16,
-        TYPES_COUNT // every new type should be always added to the end for compatibility with old archives
+      TYPE_NONE,
+      TYPE_BOOLEAN,
+      TYPE_INT32,
+      TYPE_FLOAT,
+      TYPE_STRING,
+      TYPE_WIDE_STRING,
+      TYPE_BYTE_ARRAY,
+      TYPE_UINT32,
+      TYPE_KEYED_ARCHIVE,
+      TYPE_INT64,
+      TYPE_UINT64,
+      TYPE_VECTOR2,
+      TYPE_VECTOR3,
+      TYPE_VECTOR4,
+      TYPE_MATRIX2,
+      TYPE_MATRIX3,
+      TYPE_MATRIX4,
+      TYPE_COLOR,
+      TYPE_FASTNAME,
+      TYPE_AABBOX3,
+      TYPE_FILEPATH,
+      TYPE_FLOAT64,
+      TYPE_INT8,
+      TYPE_UINT8,
+      TYPE_INT16,
+      TYPE_UINT16,
+      TYPE_RECT,
+      TYPE_VARIANT_VECTOR,
+      TYPE_QUATERNION,
+      TYPE_TRANSFORM,
+      TYPE_AABBOX2,
+      TYPES_COUNT,
     };
     eVariantType type = TYPE_NONE;
 
@@ -163,6 +185,12 @@ public:
         FastName* fastnameValue;
 
         AABBox3* aabbox3;
+
+        Rect* rectValue;
+        Vector<VariantType>* variantVectorValue;
+        Quaternion* quaternionValue;
+        Transform* transformValue;
+        AABBox2* aabbox2Value;
     };
 
     struct PairTypeName
@@ -170,6 +198,8 @@ public:
         eVariantType variantType;
         String variantName;
         MetaInfo* variantMeta;
+
+        PairTypeName() = default;
 
         PairTypeName(eVariantType type, String name, MetaInfo* meta)
         {
@@ -340,6 +370,12 @@ public:
 	 */
     void SetFilePath(const FilePath& value);
 
+    void SetRect(const Rect& value);
+    void SetVariantVector(const Vector<VariantType>& value);
+    void SetQuaternion(const Quaternion& value);
+    void SetTransform(const Transform& value);
+    void SetAABBox2(const AABBox2& value);
+
     /**
 		\brief Function to return bool value from variable
 		\returns value of variable, or generate assert if variable type is different
@@ -495,6 +531,12 @@ public:
 		 \returns value of variable, or generate assert if variable type is different
      */
     const FilePath& AsFilePath() const;
+
+    const Rect& AsRect() const;
+    const Vector<VariantType>& AsVariantVector() const;
+    const Quaternion& AsQuaternion() const;
+    const Transform& AsTransform() const;
+    const AABBox2& AsAABBox2() const;
 
     // File read & write helpers
 

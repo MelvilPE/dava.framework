@@ -14,7 +14,11 @@
 #include "Base/Meta.h"
 #include "Math/Color.h"
 #include "Base/FastName.h"
+#include "Math/AABBox2.h"
 #include "Math/AABBox3.h"
+#include "Math/Rect.h"
+#include "Math/Quaternion.h"
+#include "Math/Transform.h"
 
 namespace DAVA
 {
@@ -46,6 +50,12 @@ const String VariantType::TYPENAME_FASTNAME = "FastName";
 const String VariantType::TYPENAME_AABBOX3 = "AABBox3";
 const String VariantType::TYPENAME_FILEPATH = "FilePath";
 
+const String VariantType::TYPENAME_RECT = "Rect";
+const String VariantType::TYPENAME_VARIANT_VECTOR = "variantVector";
+const String VariantType::TYPENAME_QUATERNION = "Quaternion";
+const String VariantType::TYPENAME_TRANSFORM = "Rect";
+const String VariantType::TYPENAME_AABBOX2 = "AABBox2";
+
 const Array<VariantType::PairTypeName, VariantType::TYPES_COUNT> VariantType::variantNamesMap =
 { { VariantType::PairTypeName(VariantType::TYPE_NONE, TYPENAME_UNKNOWN, nullptr),
     VariantType::PairTypeName(VariantType::TYPE_BOOLEAN, TYPENAME_BOOLEAN, MetaInfo::Instance<bool>()),
@@ -72,7 +82,11 @@ const Array<VariantType::PairTypeName, VariantType::TYPES_COUNT> VariantType::va
     VariantType::PairTypeName(VariantType::TYPE_INT8, TYPENAME_INT8, MetaInfo::Instance<int8>()),
     VariantType::PairTypeName(VariantType::TYPE_UINT8, TYPENAME_UINT8, MetaInfo::Instance<uint8>()),
     VariantType::PairTypeName(VariantType::TYPE_INT16, TYPENAME_INT16, MetaInfo::Instance<int16>()),
-    VariantType::PairTypeName(VariantType::TYPE_UINT16, TYPENAME_UINT16, MetaInfo::Instance<uint16>())
+    VariantType::PairTypeName(VariantType::TYPE_RECT, TYPENAME_RECT, MetaInfo::Instance<Rect>()),
+    VariantType::PairTypeName(VariantType::TYPE_VARIANT_VECTOR, TYPENAME_VARIANT_VECTOR, MetaInfo::Instance<Vector<VariantType>>()),
+    VariantType::PairTypeName(VariantType::TYPE_QUATERNION, TYPENAME_QUATERNION, MetaInfo::Instance<Quaternion>()),
+    VariantType::PairTypeName(VariantType::TYPE_TRANSFORM, TYPENAME_TRANSFORM, MetaInfo::Instance<Transform>()),
+    VariantType::PairTypeName(VariantType::TYPE_AABBOX2, TYPENAME_AABBOX2, MetaInfo::Instance<AABBox2>())
 } };
 
 VariantType::VariantType()
@@ -213,6 +227,31 @@ VariantType::VariantType(const AABBox3& value)
 VariantType::VariantType(const FilePath& value)
 {
     SetFilePath(value);
+}
+
+VariantType::VariantType(const Rect& value)
+{
+    SetRect(value);
+}
+
+VariantType::VariantType(const Vector<VariantType>& value)
+{
+    SetVariantVector(value);
+}
+
+VariantType::VariantType(const Quaternion& value)
+{
+    SetQuaternion(value);
+}
+
+VariantType::VariantType(const Transform& value)
+{
+    SetTransform(value);
+}
+
+VariantType::VariantType(const AABBox2& value)
+{
+    SetAABBox2(value);
 }
 
 VariantType::~VariantType()
@@ -440,6 +479,31 @@ void VariantType::SetFilePath(const FilePath& value)
     SetValueWithAllocation(TYPE_FILEPATH, value);
 }
 
+void VariantType::SetRect(const Rect& value)
+{
+    SetValueWithAllocation(TYPE_RECT, value);
+}
+
+void VariantType::SetVariantVector(const Vector<VariantType>& value)
+{
+    SetValueWithAllocation(TYPE_VARIANT_VECTOR, value);
+}
+
+void VariantType::SetQuaternion(const Quaternion& value)
+{
+    SetValueWithAllocation(TYPE_QUATERNION, value);
+}
+
+void VariantType::SetTransform(const Transform& value)
+{
+    SetValueWithAllocation(TYPE_TRANSFORM, value);
+}
+
+void VariantType::SetAABBox2(const AABBox2& value)
+{
+    SetValueWithAllocation(TYPE_AABBOX2, value);
+}
+
 void VariantType::SetVariant(const VariantType& var)
 {
     if (this == &var)
@@ -576,6 +640,31 @@ void VariantType::SetVariant(const VariantType& var)
     case TYPE_FILEPATH:
     {
         SetFilePath(var.AsFilePath());
+    }
+    break;
+    case TYPE_RECT:
+    {
+        SetRect(var.AsRect());
+    }
+    break;
+    case TYPE_VARIANT_VECTOR:
+    {
+        SetVariantVector(var.AsVariantVector());
+    }
+    break;
+    case TYPE_QUATERNION:
+    {
+        SetQuaternion(var.AsQuaternion());
+    }
+    break;
+    case TYPE_TRANSFORM:
+    {
+        SetTransform(var.AsTransform());
+    }
+    break;
+    case TYPE_AABBOX2:
+    {
+        SetAABBox2(var.AsAABBox2());
     }
     break;
 
@@ -752,6 +841,36 @@ const FilePath& VariantType::AsFilePath() const
 {
     DVASSERT(type == TYPE_FILEPATH);
     return *filepathValue;
+}
+
+const Rect& VariantType::AsRect() const
+{
+    DVASSERT(type == TYPE_RECT);
+    return *rectValue;
+}
+
+const Vector<VariantType>& VariantType::AsVariantVector() const
+{
+    DVASSERT(type == TYPE_VARIANT_VECTOR);
+    return *variantVectorValue;
+}
+
+const Quaternion& VariantType::AsQuaternion() const
+{
+    DVASSERT(type == TYPE_QUATERNION);
+    return *quaternionValue;
+}
+
+const Transform& VariantType::AsTransform() const
+{
+    DVASSERT(type == TYPE_TRANSFORM);
+    return *transformValue;
+}
+
+const AABBox2& VariantType::AsAABBox2() const
+{
+    DVASSERT(type == TYPE_AABBOX2);
+    return *aabbox2Value;
 }
 
 bool VariantType::Write(File* fp) const
@@ -1463,6 +1582,31 @@ void VariantType::ReleasePointer()
             delete filepathValue;
         }
         break;
+        case TYPE_RECT:
+        {
+            delete rectValue;
+        }
+        break;
+        case TYPE_VARIANT_VECTOR:
+        {
+            delete variantVectorValue;
+        }
+        break;
+        case TYPE_QUATERNION:
+        {
+            delete quaternionValue;
+        }
+        break;
+        case TYPE_TRANSFORM:
+        {
+            delete transformValue;
+        }
+        break;
+        case TYPE_AABBOX2:
+        {
+            delete aabbox2Value;
+        }
+        break;
         default:
         {
             break;
@@ -1731,6 +1875,11 @@ void* VariantType::MetaObject()
     case TYPE_FASTNAME:
     case TYPE_AABBOX3:
     case TYPE_FILEPATH:
+    case TYPE_RECT:
+    case TYPE_VARIANT_VECTOR:
+    case TYPE_QUATERNION:
+    case TYPE_TRANSFORM:
+    case TYPE_AABBOX2:
         ret = pointerValue;
         break;
     case TYPE_KEYED_ARCHIVE:
@@ -1838,6 +1987,21 @@ VariantType VariantType::LoadData(const void* src, const MetaInfo* meta)
         break;
     case TYPE_FILEPATH:
         v.SetFilePath(*(static_cast<const FilePath*>(src)));
+        break;
+    case TYPE_RECT:
+        v.SetRect(*(static_cast<const Rect*>(src)));
+        break;
+    case TYPE_VARIANT_VECTOR:
+        v.SetVariantVector(*(static_cast<const Vector<VariantType>*>(src)));
+        break;
+    case TYPE_QUATERNION:
+        v.SetQuaternion(*(static_cast<const Quaternion*>(src)));
+        break;
+    case TYPE_TRANSFORM:
+        v.SetTransform(*(static_cast<const Transform*>(src)));
+        break;
+    case TYPE_AABBOX2:
+        v.SetAABBox2(*(static_cast<const AABBox2*>(src)));
         break;
     default:
         if (meta == MetaInfo::Instance<int8>())
@@ -1972,6 +2136,21 @@ void VariantType::SaveData(void* dst, const MetaInfo* meta, const VariantType& v
     case TYPE_FILEPATH:
         *(static_cast<FilePath*>(dst)) = val.AsFilePath();
         break;
+    case TYPE_RECT:
+        *(static_cast<Rect*>(dst)) = val.AsRect();
+        break;
+    case TYPE_VARIANT_VECTOR:
+        *(static_cast<Vector<VariantType>*>(dst)) = val.AsVariantVector();
+        break;
+    case TYPE_QUATERNION:
+        *(static_cast<Quaternion*>(dst)) = val.AsQuaternion();
+        break;
+    case TYPE_TRANSFORM:
+        *(static_cast<Transform*>(dst)) = val.AsTransform();
+        break;
+    case TYPE_AABBOX2:
+        *(static_cast<AABBox2*>(dst)) = val.AsAABBox2();
+        break;
     default:
         DVASSERT(0 && "Don't know how to save data from such VariantType");
         break;
@@ -2092,6 +2271,21 @@ VariantType VariantType::FromType(int type)
         break;
     case TYPE_FILEPATH:
         v.SetFilePath(FilePath());
+        break;
+    case TYPE_RECT:
+        v.SetRect(Rect());
+        break;
+    case TYPE_VARIANT_VECTOR:
+        v.SetVariantVector(Vector<VariantType>());
+        break;
+    case TYPE_QUATERNION:
+        v.SetQuaternion(Quaternion());
+        break;
+    case TYPE_TRANSFORM:
+        v.SetTransform(Transform());
+        break;
+    case TYPE_AABBOX2:
+        v.SetAABBox2(AABBox2());
         break;
     default:
         DVASSERT(0 && "Don't know how to create such VariantType");
