@@ -6,7 +6,7 @@
 
 namespace DAVA
 {
-class Transform final
+class Transform
 {
 public:
     Transform();
