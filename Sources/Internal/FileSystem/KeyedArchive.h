@@ -10,6 +10,11 @@
 #include "Math/Matrix2.h"
 #include "Math/Matrix3.h"
 #include "Math/Matrix4.h"
+#include "Math/Rect.h"
+#include "Math/Quaternion.h"
+#include "Math/Transform.h"
+#include "Math/AABBox2.h"
+#include "Math/AABBox3.h"
 #include "Math/Math2D.h"
 #include "Math/Color.h"
 #include "Reflection/Reflection.h"
@@ -207,6 +212,12 @@ public:
     */
     Color GetColor(const String& key, const Color& defaultValue = Color()) const;
 
+    Rect GetRect(const String& key, const Rect& defaultValue = Rect()) const;
+    Vector<VariantType> GetVariantVector(const String& key, const Vector<VariantType>& defaultValue = Vector<VariantType>()) const;
+    Quaternion GetQuaternion(const String& key, const Quaternion& defaultValue = Quaternion()) const;
+    Transform GetTransform(const String& key, const Transform& defaultValue = Transform()) const;
+    AABBox2 GetAABBox2(const String& key, const AABBox2& defaultValue = AABBox2()) const;
+
     /*
         \brief Function to get object from byte array.
         \param[in] key string key
@@ -367,6 +378,12 @@ public:
     \param[in] value we want to set for this key
     */
     void SetColor(const String& key, const Color& value);
+
+    void SetRect(const String& key, const Rect& value);
+    void SetVariantVector(const String& key, const Vector<VariantType>& value);
+    void SetQuaternion(const String& key, const Quaternion& value);
+    void SetTransform(const String& key, const Transform& value);
+    void SetAABBox2(const String& key, const AABBox2& value);
 
     /**
         \brief Function to set value from template type to byte array.  

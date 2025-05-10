@@ -435,6 +435,31 @@ void KeyedArchive::SetColor(const String& key, const Color& value)
     SetVariant(key, value, &VariantType::SetColor);
 }
 
+void KeyedArchive::SetRect(const String& key, const Rect& value)
+{
+    SetVariant(key, value, &VariantType::SetRect);
+}
+
+void KeyedArchive::SetVariantVector(const String& key, const Vector<VariantType>& value)
+{
+    SetVariant(key, value, &VariantType::SetVariantVector);
+}
+
+void KeyedArchive::SetQuaternion(const String& key, const Quaternion& value)
+{
+    SetVariant(key, value, &VariantType::SetQuaternion);
+}
+
+void KeyedArchive::SetTransform(const String& key, const Transform& value)
+{
+    SetVariant(key, value, &VariantType::SetTransform);
+}
+
+void KeyedArchive::SetAABBox2(const String& key, const AABBox2& value)
+{
+    SetVariant(key, value, &VariantType::SetAABBox2);
+}
+
 bool KeyedArchive::IsKeyExists(const String& key) const
 {
     auto it = objectMap.find(key);
@@ -587,6 +612,36 @@ Color KeyedArchive::GetColor(const String& key, const Color& defaultValue) const
 {
     auto it = objectMap.find(key);
     return it != objectMap.end() ? it->second->AsColor() : defaultValue;
+}
+
+Rect KeyedArchive::GetRect(const String& key, const Rect& defaultValue) const
+{
+    auto it = objectMap.find(key);
+    return it != objectMap.end() ? it->second->AsRect() : defaultValue;
+}
+
+Vector<VariantType> KeyedArchive::GetVariantVector(const String& key, const Vector<VariantType>& defaultValue) const
+{
+    auto it = objectMap.find(key);
+    return it != objectMap.end() ? it->second->AsVariantVector() : defaultValue;
+}
+
+Quaternion KeyedArchive::GetQuaternion(const String& key, const Quaternion& defaultValue) const
+{
+    auto it = objectMap.find(key);
+    return it != objectMap.end() ? it->second->AsQuaternion() : defaultValue;
+}
+
+Transform KeyedArchive::GetTransform(const String& key, const Transform& defaultValue) const
+{
+    auto it = objectMap.find(key);
+    return it != objectMap.end() ? it->second->AsTransform() : defaultValue;
+}
+
+AABBox2 KeyedArchive::GetAABBox2(const String& key, const AABBox2& defaultValue) const
+{
+    auto it = objectMap.find(key);
+    return it != objectMap.end() ? it->second->AsAABBox2() : defaultValue;
 }
 
 void KeyedArchive::DeleteKey(const String& key)
