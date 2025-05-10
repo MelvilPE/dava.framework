@@ -53,7 +53,7 @@ const String VariantType::TYPENAME_FILEPATH = "FilePath";
 const String VariantType::TYPENAME_RECT = "Rect";
 const String VariantType::TYPENAME_VARIANT_VECTOR = "variantVector";
 const String VariantType::TYPENAME_QUATERNION = "Quaternion";
-const String VariantType::TYPENAME_TRANSFORM = "Rect";
+const String VariantType::TYPENAME_TRANSFORM = "Transform";
 const String VariantType::TYPENAME_AABBOX2 = "AABBox2";
 
 const Array<VariantType::PairTypeName, VariantType::TYPES_COUNT> VariantType::variantNamesMap =
