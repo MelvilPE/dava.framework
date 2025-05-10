@@ -37,6 +37,16 @@ public:
     //! \param size size of bounding box
     inline AABBox2(const Vector2& center, float32 size);
 
+    bool operator==(const AABBox2& _bbox) const
+    {
+        return (min == _bbox.min) && (max == _bbox.max);
+    }
+
+    bool operator!=(const AABBox2& _bbox) const
+    {
+        return (min != _bbox.min) || (max != _bbox.max);
+    }
+
     //! \brief add point to bounding box
     //! if point inside bounding box bounding box not changed
     //! in another case bounding box become larger

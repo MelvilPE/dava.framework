@@ -1897,6 +1897,31 @@ bool VariantType::operator==(const VariantType& other) const
         isEqual = (AsFilePath() == other.AsFilePath());
     }
     break;
+    case TYPE_RECT:
+    {
+        isEqual = (AsRect() == other.AsRect());
+    }
+    break;
+    case TYPE_VARIANT_VECTOR:
+    {
+        isEqual = (AsVariantVector() == other.AsVariantVector());
+    }
+    break;
+    case TYPE_QUATERNION:
+    {
+        isEqual = (AsQuaternion() == other.AsQuaternion());
+    }
+    break;
+    case TYPE_TRANSFORM:
+    {
+        isEqual = (AsTransform() == other.AsTransform());
+    }
+    break;
+    case TYPE_AABBOX2:
+    {
+        isEqual = (AsAABBox2() == other.AsAABBox2());
+    }
+    break;
     case TYPE_NONE:
     {
         isEqual = true;
