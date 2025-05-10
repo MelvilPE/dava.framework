@@ -231,6 +231,12 @@ bool KeyedArchive::LoadFromYamlFile(const FilePath& pathName)
     return (parser.Get() != nullptr) && LoadFromYamlNode(parser->GetRootNode());
 }
 
+bool KeyedArchive::LoadFromYamlString(String inputString)
+{
+    RefPtr<YamlParser> parser(YamlParser::CreateAndParseString(inputString));
+    return (parser.Get() != nullptr) && LoadFromYamlNode(parser->GetRootNode());
+}
+
 bool KeyedArchive::LoadFromYamlNode(const YamlNode* rootNode)
 {
     if (nullptr == rootNode)
@@ -269,6 +275,23 @@ bool KeyedArchive::SaveToYamlFile(const FilePath& pathName) const
     node->Set(VariantType::TYPENAME_KEYED_ARCHIVE, VariantType(const_cast<KeyedArchive*>(this)));
 
     return YamlEmitter::SaveToYamlFile(pathName, node.Get());
+}
+
+String KeyedArchive::SaveToYamlString() const
+{
+    RefPtr<YamlNode> node(YamlNode::CreateMapNode());
+    node->Set(VariantType::TYPENAME_KEYED_ARCHIVE, VariantType(const_cast<KeyedArchive*>(this)));
+    
+    ScopedPtr<DynamicMemoryFile> buffer(DynamicMemoryFile::Create(File::CREATE | File::WRITE));
+    if (!YamlEmitter::SaveToYamlFile(node.Get(), buffer))
+    {
+        Logger::Error("failed to save KeyedArchive to memory_file while saving to yaml string");
+        return "";
+    }
+
+    const char* buffPtr = reinterpret_cast<const char*>(buffer->GetData());
+    String result = String(buffPtr, buffer->GetSize());
+    return result;
 }
 
 void KeyedArchive::SetBool(const String& key, bool value)

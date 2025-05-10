@@ -19,17 +19,12 @@ public:
     void Serialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
     void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
-    KeyedArchive* GetArchive();
-
-    //this method helps to load data for older scene file version
-    void LoadFromArchive(const KeyedArchive& srcProperties, SerializationContext* serializationContext);
-
     DAVA_VIRTUAL_REFLECTION(UnregisteredComponent, Component);
 
 private:
-    UnregisteredComponent(const KeyedArchive& srcProperties);
+    UnregisteredComponent(const KeyedArchive& archive);
 
 private:
-    KeyedArchive* properties;
+    String unregisteredComponent;
 };
 };

@@ -422,10 +422,21 @@ public:
     bool LoadFromYamlFile(const FilePath& pathName);
 
     /**
+     \brief Function loads data from given string respresentation.
+     \param[in] inputString string representation to parse back to KeyedArchive
+     */
+    bool LoadFromYamlString(String inputString);
+
+    /**
      \brief Function saves data to given yaml file.
      \param[in] file to save
 	 */
     bool SaveToYamlFile(const FilePath& pathName) const;
+
+    /**
+     \brief Function saves data to string representation.
+     */
+    String SaveToYamlString() const;
 
     /**
 		\brief Deletes named key.
