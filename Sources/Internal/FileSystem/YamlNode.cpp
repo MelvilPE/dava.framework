@@ -296,6 +296,11 @@ Rect YamlNode::AsRect() const
     return result;
 }
 
+Quaternion YamlNode::AsQuaternion() const
+{
+    return Quaternion(AsVector4().data);
+}
+
 VariantType YamlNode::AsVariantType() const
 {
     VariantType retValue;
@@ -449,9 +454,107 @@ VariantType YamlNode::AsVariantType() const
                                         tRowVect.x, tRowVect.y, tRowVect.z, tRowVect.w,
                                         foRowVect.x, foRowVect.y, foRowVect.z, foRowVect.w));
         }
+        else if (innerTypeName == DAVA::VariantType::TYPENAME_AABBOX2)
+        {
+            const YamlNode* firstRowNode = it->second->Get(0);
+            const YamlNode* secondRowNode = it->second->Get(1);
+            
+            if (NULL == firstRowNode || NULL == secondRowNode)
+            {
+                return retValue;
+            }
+
+            if (firstRowNode->GetType() == TYPE_MAP && secondRowNode->GetType() == TYPE_MAP)
+            {
+                firstRowNode = firstRowNode->Get(0);
+                secondRowNode = secondRowNode->Get(0);
+
+                if (NULL == firstRowNode || NULL == secondRowNode)
+                {
+                    return retValue;
+                }
+            }
+
+            Vector2 min = firstRowNode->AsVector2();
+            Vector2 max = secondRowNode->AsVector2();
+            retValue.SetAABBox2(AABBox2(min, max));
+        }
+        else if (innerTypeName == DAVA::VariantType::TYPENAME_AABBOX3)
+        {
+            const YamlNode* firstRowNode = it->second->Get(0);
+            const YamlNode* secondRowNode = it->second->Get(1);
+
+            if (NULL == firstRowNode || NULL == secondRowNode)
+            {
+                return retValue;
+            }
+
+            if (firstRowNode->GetType() == TYPE_MAP && secondRowNode->GetType() == TYPE_MAP)
+            {
+                firstRowNode = firstRowNode->Get(0);
+                secondRowNode = secondRowNode->Get(0);
+
+                if (NULL == firstRowNode || NULL == secondRowNode)
+                {
+                    return retValue;
+                }
+            }  
+
+            Vector3 min = firstRowNode->AsVector3();
+            Vector3 max = secondRowNode->AsVector3();
+            retValue.SetAABBox3(AABBox3(min, max));
+        }
         else if (innerTypeName == DAVA::VariantType::TYPENAME_COLOR)
         {
             retValue.SetColor(it->second->AsColor());
+        }
+        else if (innerTypeName == DAVA::VariantType::TYPENAME_RECT)
+        {
+            Vector4 vec = it->second->AsVector4();
+            retValue.SetRect(Rect(vec.x, vec.y, vec.z, vec.w));
+        }
+        else if (innerTypeName == DAVA::VariantType::TYPENAME_QUATERNION)
+        {
+            retValue.SetQuaternion(it->second->AsQuaternion());
+        }
+        else if (innerTypeName == DAVA::VariantType::TYPENAME_TRANSFORM)
+        {
+            const YamlNode* firstRowNode = it->second->Get(0);
+            const YamlNode* secondRowNode = it->second->Get(1);
+            const YamlNode* thirdRowNode = it->second->Get(2);
+
+            if (NULL == firstRowNode || NULL == secondRowNode || NULL == thirdRowNode)
+            {
+                return retValue;
+            }
+
+            if (firstRowNode->GetType() == TYPE_MAP && secondRowNode->GetType() == TYPE_MAP && thirdRowNode->GetType() == TYPE_MAP)
+            {
+                firstRowNode = firstRowNode->Get(0);
+                secondRowNode = secondRowNode->Get(0);
+
+                if (NULL == firstRowNode || NULL == secondRowNode || NULL == thirdRowNode)
+                {
+                    return retValue;
+                }
+            }
+
+            Vector3 translation = firstRowNode->AsVector3();
+            Vector3 scale = secondRowNode->AsVector3();
+            Quaternion rotation = thirdRowNode->AsQuaternion();
+            retValue.SetTransform(Transform(translation, scale, rotation));
+        }
+        else if (innerTypeName == DAVA::VariantType::TYPENAME_VARIANT_VECTOR)
+        {
+            Vector<VariantType> resultVariants;
+            RefPtr<YamlNode> vectorNode = it->second;
+            for (uint32 nodeIndex = 0; nodeIndex < vectorNode->GetCount(); nodeIndex++)
+            {
+                const YamlNode* currentNode = vectorNode->Get(nodeIndex);
+                VariantType convertedNode = currentNode->AsVariantType();
+                resultVariants.push_back(convertedNode);
+            }
+            retValue.SetVariantVector(resultVariants);
         }
     }
 
@@ -496,22 +599,32 @@ VariantType YamlNode::AsVariantType(const InspMember* insp) const
         return VariantType(AsInt32());
     else if (insp->Type() == MetaInfo::Instance<uint32>())
         return VariantType(AsUInt32());
+    else if (insp->Type() == MetaInfo::Instance<int64>())
+        return VariantType(AsInt64());
+    else if (insp->Type() == MetaInfo::Instance<uint64>())
+        return VariantType(AsUInt64());
+    else if (insp->Type() == MetaInfo::Instance<float32>())
+        return VariantType(AsFloat());
+    else if (insp->Type() == MetaInfo::Instance<FastName>())
+        return VariantType(AsFastName());
+    else if (insp->Type() == MetaInfo::Instance<FilePath>())
+        return VariantType(FilePath(AsString()));
     else if (insp->Type() == MetaInfo::Instance<String>())
         return VariantType(AsString());
     else if (insp->Type() == MetaInfo::Instance<WideString>())
         return VariantType(AsWString());
-    else if (insp->Type() == MetaInfo::Instance<float32>())
-        return VariantType(AsFloat());
     else if (insp->Type() == MetaInfo::Instance<Vector2>())
         return VariantType(AsVector2());
-    else if (insp->Type() == MetaInfo::Instance<Color>())
-        return VariantType(AsColor());
+    else if (insp->Type() == MetaInfo::Instance<Vector3>())
+        return VariantType(AsVector3());
     else if (insp->Type() == MetaInfo::Instance<Vector4>())
         return VariantType(AsVector4());
-    else if (insp->Type() == MetaInfo::Instance<FilePath>())
-        return VariantType(FilePath(AsString()));
-    else if (insp->Type() == MetaInfo::Instance<FastName>())
-        return VariantType(AsFastName());
+    else if (insp->Type() == MetaInfo::Instance<Color>())
+        return VariantType(AsColor());
+    else if (insp->Type() == MetaInfo::Instance<Rect>())
+        return VariantType(AsRect());
+    else if (insp->Type() == MetaInfo::Instance<Quaternion>())
+        return VariantType(AsQuaternion());
 
     DVASSERT(false);
     return VariantType();
@@ -574,6 +687,8 @@ Any YamlNode::AsAny(const ReflectedStructure::Field* field) const
         return Any(AsString());
     else if (type == Type::Instance<WideString>())
         return Any(AsWString());
+    else if (type == Type::Instance<FilePath>())
+        return Any(FilePath(AsString()));
     else if (type == Type::Instance<Vector2>())
         return Any(AsVector2());
     else if (type == Type::Instance<Vector3>())
@@ -584,8 +699,8 @@ Any YamlNode::AsAny(const ReflectedStructure::Field* field) const
         return Any(AsColor());
     else if (type == Type::Instance<Rect>())
         return Any(AsRect());
-    else if (type == Type::Instance<FilePath>())
-        return Any(FilePath(AsString()));
+    else if (type == Type::Instance<Quaternion>())
+        return Any(AsQuaternion());
 
     DVASSERT(false);
     return Any();
@@ -865,6 +980,18 @@ void YamlNode::InternalSetVector(const float32* array, uint32 dimension)
     }
     objectArray->style = AR_FLOW_REPRESENTATION;
 }
+void YamlNode::InternalSetVariantVector(const Vector<VariantType>& array)
+{
+    objectArray->array.reserve(array.size());
+    for (uint32 arrayIndex = 0; arrayIndex < array.size(); ++arrayIndex)
+    {
+        VariantType currentVariant = array[arrayIndex];
+        RefPtr<YamlNode> innerNode = CreateMapNode(true, MR_BLOCK_REPRESENTATION);
+        innerNode->InternalAddNodeToMap(currentVariant.GetTypeName(), CreateNodeFromVariantType(currentVariant), false);
+        InternalAddNodeToArray(innerNode);
+    }
+    objectArray->style = AR_BLOCK_REPRESENTATION;
+}
 
 void YamlNode::InternalSetByteArray(const uint8* byteArray, int32 byteArraySize)
 {
@@ -1044,6 +1171,24 @@ bool YamlNode::InitArrayFromVariantType(const VariantType& varType)
         InternalSetVector(color.color, Color::CHANNEL_COUNT);
     }
     break;
+    case VariantType::TYPE_RECT:
+    {
+        const Rect& rect = varType.AsRect();
+        InternalSetVector(rect.data, 4);
+    }
+    break;
+    case VariantType::TYPE_QUATERNION:
+    {
+        const Quaternion& quaternion = varType.AsQuaternion();
+        InternalSetVector(quaternion.data, 4);
+    }
+    break;
+    case VariantType::TYPE_VARIANT_VECTOR:
+    {
+        const Vector<VariantType>& vector = varType.AsVariantVector();
+        InternalSetVariantVector(vector);
+    }
+    break;
     default:
         result = false;
         break;
@@ -1062,6 +1207,47 @@ bool YamlNode::InitMapFromVariantType(const VariantType& varType)
     {
         KeyedArchive* archive = varType.AsKeyedArchive();
         InternalSetKeyedArchive(archive);
+    }
+    break;
+    case VariantType::TYPE_TRANSFORM:
+    {
+        const Transform& transform = varType.AsTransform();
+        RefPtr<YamlNode> translationNode = CreateArrayNode();
+        translationNode->InternalSetVector(transform.GetTranslation().data, Vector3::AXIS_COUNT);
+        InternalAddNodeToMap("translation", translationNode, false);
+        RefPtr<YamlNode> scaleNode = CreateArrayNode();
+        scaleNode->InternalSetVector(transform.GetScale().data, Vector3::AXIS_COUNT);
+        InternalAddNodeToMap("scale", scaleNode, false);
+        RefPtr<YamlNode> rotationNode = CreateArrayNode();
+        rotationNode->InternalSetVector(transform.GetRotation().data, Vector4::AXIS_COUNT);
+        InternalAddNodeToMap("rotation", rotationNode, false);
+    }
+    break;
+    case VariantType::TYPE_AABBOX2:
+    {
+        const AABBox2& box2 = varType.AsAABBox2();
+        auto& min = VariantType(box2.min);
+        auto& max = VariantType(box2.max);
+        RefPtr<YamlNode> arrayElementNodeValue = CreateMapNode(true, MR_BLOCK_REPRESENTATION);
+        arrayElementNodeValue->InternalAddNodeToMap(min.GetTypeName(), CreateNodeFromVariantType(min), false);
+        RefPtr<YamlNode> arrayElementNodeValue1 = CreateMapNode(true, MR_BLOCK_REPRESENTATION);
+        arrayElementNodeValue1->InternalAddNodeToMap(max.GetTypeName(), CreateNodeFromVariantType(max), false);
+        InternalAddNodeToMap("min", arrayElementNodeValue, false);
+        InternalAddNodeToMap("max", arrayElementNodeValue1, false);
+    }
+    break;
+    case VariantType::TYPE_AABBOX3:
+    {
+        const AABBox3& box3 = varType.AsAABBox3();
+        auto& min = VariantType(box3.min);
+        auto& max = VariantType(box3.max);
+        RefPtr<YamlNode> arrayElementNodeValue = CreateMapNode(true, MR_BLOCK_REPRESENTATION);
+        arrayElementNodeValue->InternalAddNodeToMap(min.GetTypeName(), CreateNodeFromVariantType(min), false);
+        RefPtr<YamlNode> arrayElementNodeValue1 = CreateMapNode(true, MR_BLOCK_REPRESENTATION);
+        arrayElementNodeValue1->InternalAddNodeToMap(max.GetTypeName(), CreateNodeFromVariantType(max), false);
+        InternalAddNodeToMap("min", arrayElementNodeValue, false);
+        InternalAddNodeToMap("max", arrayElementNodeValue1, false);
+
     }
     break;
     default:
@@ -1087,7 +1273,7 @@ RefPtr<YamlNode> YamlNode::CreateNodeFromVariantType(const VariantType& varType)
     break;
     case TYPE_ARRAY:
     {
-        node = CreateArrayNode();
+        node = CreateArrayNode(AR_BLOCK_REPRESENTATION);
         const bool initResult = node->InitArrayFromVariantType(varType);
         DVASSERT(initResult);
     }
@@ -1132,9 +1318,15 @@ DAVA::YamlNode::eType YamlNode::VariantTypeToYamlNodeType(VariantType::eVariantT
     case VariantType::TYPE_MATRIX3:
     case VariantType::TYPE_MATRIX4:
     case VariantType::TYPE_COLOR:
+    case VariantType::TYPE_VARIANT_VECTOR:
+    case VariantType::TYPE_RECT:
+    case VariantType::TYPE_QUATERNION:
         return TYPE_ARRAY;
 
     case VariantType::TYPE_KEYED_ARCHIVE:
+    case VariantType::TYPE_TRANSFORM:
+    case VariantType::TYPE_AABBOX3:
+    case VariantType::TYPE_AABBOX2:
         return TYPE_MAP;
     default:
         break;

@@ -78,6 +78,7 @@ public:
     Vector4 AsVector4() const;
     Color AsColor() const;
     Rect AsRect() const;
+    Quaternion AsQuaternion() const;
 
     //These functions work only if type of node is map
     const UnorderedMap<String, RefPtr<YamlNode>>& AsMap() const;
@@ -189,7 +190,8 @@ protected:
 
     void InternalSetString(const String& value, eStringRepresentation style);
     void InternalSetMatrix(const float32* array, uint32 dimension);
-    void InternalSetVector(const float32 array[], uint32 dimension);
+    void InternalSetVector(const float32* array, uint32 dimension);
+    void InternalSetVariantVector(const Vector<VariantType>& array);
     void InternalSetByteArray(const uint8* byteArray, int32 byteArraySize);
     void InternalSetKeyedArchive(KeyedArchive* archive);
 
