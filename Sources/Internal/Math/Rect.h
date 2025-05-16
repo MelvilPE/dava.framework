@@ -14,10 +14,14 @@ namespace DAVA
  */
 struct Rect
 {
-    float32 x;
-    float32 y;
-    float32 dx;
-    float32 dy;
+    union
+    {
+        struct
+        {
+            float32 x, y, dx, dy;
+        };
+        float32 data[4];
+    };
 
     inline Rect();
     inline Rect(float32 _x, float32 _y, float32 _dx, float32 _dy);
