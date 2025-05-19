@@ -56,7 +56,7 @@ const String VariantType::TYPENAME_QUATERNION = "Quaternion";
 const String VariantType::TYPENAME_TRANSFORM = "Transform";
 const String VariantType::TYPENAME_AABBOX2 = "AABBox2";
 
-const Array<VariantType::PairTypeName, VariantType::TYPES_COUNT> VariantType::variantNamesMap =
+const Array<VariantType::PairTypeName, VariantType::TYPES_COUNT> VariantType::variantNamesMap = 
 { { VariantType::PairTypeName(VariantType::TYPE_NONE, TYPENAME_UNKNOWN, nullptr),
     VariantType::PairTypeName(VariantType::TYPE_BOOLEAN, TYPENAME_BOOLEAN, MetaInfo::Instance<bool>()),
     VariantType::PairTypeName(VariantType::TYPE_INT32, TYPENAME_INT32, MetaInfo::Instance<int32>()),
@@ -82,6 +82,7 @@ const Array<VariantType::PairTypeName, VariantType::TYPES_COUNT> VariantType::va
     VariantType::PairTypeName(VariantType::TYPE_INT8, TYPENAME_INT8, MetaInfo::Instance<int8>()),
     VariantType::PairTypeName(VariantType::TYPE_UINT8, TYPENAME_UINT8, MetaInfo::Instance<uint8>()),
     VariantType::PairTypeName(VariantType::TYPE_INT16, TYPENAME_INT16, MetaInfo::Instance<int16>()),
+    VariantType::PairTypeName(VariantType::TYPE_UINT16, TYPENAME_UINT16, MetaInfo::Instance<uint16>()),
     VariantType::PairTypeName(VariantType::TYPE_RECT, TYPENAME_RECT, MetaInfo::Instance<Rect>()),
     VariantType::PairTypeName(VariantType::TYPE_VARIANT_VECTOR, TYPENAME_VARIANT_VECTOR, MetaInfo::Instance<Vector<VariantType>>()),
     VariantType::PairTypeName(VariantType::TYPE_QUATERNION, TYPENAME_QUATERNION, MetaInfo::Instance<Quaternion>()),
