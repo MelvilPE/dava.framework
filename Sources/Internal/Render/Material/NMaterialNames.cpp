@@ -228,15 +228,12 @@ Vector<FastName> RUNTIME_ONLY_PRESETS = {};
 bool NMaterialPresetName::IsRuntimePreset(const FastName& preset)
 {
     auto it = std::find_if(RUNTIME_ONLY_PRESETS.begin(), RUNTIME_ONLY_PRESETS.end(), [&preset](const FastName& toFind)
-    {
-        return preset == toFind;
-    });
+                           { return preset == toFind; });
     return it != RUNTIME_ONLY_PRESETS.end();
 }
 
-//flags
+// flags
 const FastName NMaterialFlagName::FLAG_BLENDING = FastName("BLENDING");
-
 const FastName NMaterialFlagName::FLAG_VERTEXFOG = FastName("VERTEX_FOG");
 const FastName NMaterialFlagName::FLAG_FOG_LINEAR = FastName("FOG_LINEAR");
 const FastName NMaterialFlagName::FLAG_FOG_HALFSPACE = FastName("FOG_HALFSPACE");
@@ -245,31 +242,37 @@ const FastName NMaterialFlagName::FLAG_FOG_ATMOSPHERE = FastName("FOG_ATMOSPHERE
 const FastName NMaterialFlagName::FLAG_FOG_ATMOSPHERE_NO_ATTENUATION = FastName("FOG_ATMOSPHERE_NO_ATTENUATION");
 const FastName NMaterialFlagName::FLAG_FOG_ATMOSPHERE_NO_SCATTERING = FastName("FOG_ATMOSPHERE_NO_SCATTERING");
 const FastName NMaterialFlagName::FLAG_TEXTURESHIFT = FastName("TEXTURE0_SHIFT_ENABLED");
+const FastName NMaterialFlagName::FLAG_ENABLE_FOG = FastName("ENABLE_FOG");
+const FastName NMaterialFlagName::FLAG_ENABLE_HIGH_QUALITY_FOG = FastName("ENABLE_HIGH_QUALITY_FOG");
+const FastName NMaterialFlagName::FLAG_TEXTURE_SHIFT = FastName("TEXTURE0_SHIFT_ENABLED");
 const FastName NMaterialFlagName::FLAG_TEXTURE0_ANIMATION_SHIFT = FastName("TEXTURE0_ANIMATION_SHIFT");
 const FastName NMaterialFlagName::FLAG_WAVE_ANIMATION = FastName("WAVE_ANIMATION");
 const FastName NMaterialFlagName::FLAG_FAST_NORMALIZATION = FastName("FAST_NORMALIZATION");
 const FastName NMaterialFlagName::FLAG_TILED_DECAL_MASK = FastName("TILED_DECAL_MASK");
 const FastName NMaterialFlagName::FLAG_TILED_DECAL_ROTATION = FastName("TILE_DECAL_ROTATION");
+const FastName NMaterialFlagName::FLAG_TILED_DECAL_TRANSFORM = FastName("TILED_DECAL_TRANSFORM");
+const FastName NMaterialFlagName::FLAG_TILED_DECAL_ANIMATED_EMISSION = FastName("TILED_DECAL_ANIMATED_EMISSION");
+const FastName NMaterialFlagName::FLAG_TILED_DECAL_BLEND_NORMAL = FastName("TILED_DECAL_BLEND_NORMAL");
+const FastName NMaterialFlagName::FLAG_TILED_DECAL_OVERRIDE_ROUGHNESS_METALLIC = FastName("TILED_DECAL_OVERRIDE_ROUGHNESS_METALLIC");
+const FastName NMaterialFlagName::FLAG_ALBEDO_TRANSFORM = FastName("ALBEDO_TRANSFORM");
 const FastName NMaterialFlagName::FLAG_FLATCOLOR = FastName("FLATCOLOR");
-const FastName NMaterialFlagName::FLAG_FLATALBEDO = FastName("FLATALBEDO");
-
-const FastName NMaterialFlagName::FLAG_DISTANCEATTENUATION = FastName("DISTANCE_ATTENUATION");
+const FastName NMaterialFlagName::FLAG_FLAT_ALBEDO = FastName("FLATALBEDO");
+const FastName NMaterialFlagName::FLAG_DISTANCE_ATTENUATION = FastName("DISTANCE_ATTENUATION");
 const FastName NMaterialFlagName::FLAG_SPECULAR = FastName("SPECULAR");
 const FastName NMaterialFlagName::FLAG_SEPARATE_NORMALMAPS = FastName("SEPARATE_NORMALMAPS");
-
+const FastName NMaterialFlagName::FLAG_VERTEX_COLOR = FastName("VERTEX_COLOR");
 const FastName NMaterialFlagName::FLAG_SPEED_TREE_OBJECT = FastName("SPEED_TREE_OBJECT");
+const FastName NMaterialFlagName::FLAG_SPEEDTREE_JOINT_TRANSFORM = FastName("SPEEDTREE_JOINT_TRANSFORM");
+const FastName NMaterialFlagName::FLAG_SPEEDTREE_JOINT_LENGTHWISE_TRANSFORM = FastName("SPEEDTREE_JOINT_LENGTHWISE_TRANSFORM");
 const FastName NMaterialFlagName::FLAG_SPHERICAL_LIT = FastName("SPHERICAL_LIT");
-
 const FastName NMaterialFlagName::FLAG_TANGENT_SPACE_WATER_REFLECTIONS = FastName("TANGENT_SPACE_WATER_REFLECTIONS");
-
 const FastName NMaterialFlagName::FLAG_DEBUG_UNITY_Z_NORMAL = FastName("DEBUG_UNITY_Z_NORMAL");
 const FastName NMaterialFlagName::FLAG_DEBUG_Z_NORMAL_SCALE = FastName("DEBUG_Z_NORMAL_SCALE");
 const FastName NMaterialFlagName::FLAG_DEBUG_NORMAL_ROTATION = FastName("DEBUG_NORMAL_ROTATION");
-
 const FastName NMaterialFlagName::FLAG_HARD_SKINNING = FastName("HARD_SKINNING");
 const FastName NMaterialFlagName::FLAG_SOFT_SKINNING = FastName("SOFT_SKINNING");
-
 const FastName NMaterialFlagName::FLAG_FLOWMAP_SKY = FastName("FLOWMAP_SKY");
+const FastName NMaterialFlagName::FLAG_PARTICLES_MASK = FastName("PARTICLES_MASK");
 const FastName NMaterialFlagName::FLAG_PARTICLES_FLOWMAP = FastName("PARTICLES_FLOWMAP");
 const FastName NMaterialFlagName::FLAG_PARTICLES_FLOWMAP_ANIMATION = FastName("PARTICLES_FLOWMAP_ANIMATION");
 const FastName NMaterialFlagName::FLAG_PARTICLES_PERSPECTIVE_MAPPING = FastName("PARTICLES_PERSPECTIVE_MAPPING");
@@ -277,86 +280,166 @@ const FastName NMaterialFlagName::FLAG_PARTICLES_THREE_POINT_GRADIENT = FastName
 const FastName NMaterialFlagName::FLAG_PARTICLES_NOISE = FastName("PARTICLES_NOISE");
 const FastName NMaterialFlagName::FLAG_PARTICLES_FRESNEL_TO_ALPHA = FastName("PARTICLES_FRESNEL_TO_ALPHA");
 const FastName NMaterialFlagName::FLAG_PARTICLES_ALPHA_REMAP = FastName("PARTICLES_ALPHA_REMAP");
-
+const FastName NMaterialFlagName::FLAG_PARTICLES_VERTEX_ANIMATION = FastName("PARTICLES_VERTEX_ANIMATION");
+const FastName NMaterialFlagName::FLAG_PARTICLES_VERTEX_ANIMATION_MASK = FastName("PARTICLES_VERTEX_ANIMATION_MASK");
 const FastName NMaterialFlagName::FLAG_LIGHTMAPONLY = FastName("MATERIAL_VIEW_LIGHTMAP_ONLY");
 const FastName NMaterialFlagName::FLAG_TEXTUREONLY = FastName("MATERIAL_VIEW_TEXTURE_ONLY");
 const FastName NMaterialFlagName::FLAG_SETUPLIGHTMAP = FastName("SETUP_LIGHTMAP");
 const FastName NMaterialFlagName::FLAG_VIEWALBEDO = FastName("VIEW_ALBEDO");
+const FastName NMaterialFlagName::FLAG_VIEWNORMAL = FastName("VIEW_NORMAL");
+const FastName NMaterialFlagName::FLAG_VIEWNORMAL_FINAL = FastName("VIEW_NORMAL_FINAL");
+const FastName NMaterialFlagName::FLAG_VIEWROUGHNESS = FastName("VIEW_ROUGHNESS");
+const FastName NMaterialFlagName::FLAG_VIEWMETALLIC = FastName("VIEW_METALLIC");
+const FastName NMaterialFlagName::FLAG_VIEWAMBIENT_OCCLUSION = FastName("VIEW_AMBIENTOCCLUSION");
 const FastName NMaterialFlagName::FLAG_VIEWAMBIENT = FastName("VIEW_AMBIENT");
 const FastName NMaterialFlagName::FLAG_VIEWDIFFUSE = FastName("VIEW_DIFFUSE");
 const FastName NMaterialFlagName::FLAG_VIEWSPECULAR = FastName("VIEW_SPECULAR");
-
+const FastName NMaterialFlagName::FLAG_ALPHA_EROSION = FastName("ALPHA_EROSION");
+const FastName NMaterialFlagName::FLAG_SOFT_PARTICLES = FastName("SOFT_PARTICLES");
 const FastName NMaterialFlagName::FLAG_FRAME_BLEND = FastName("FRAME_BLEND");
 const FastName NMaterialFlagName::FLAG_FORCE_2D_MODE = FastName("FORCE_2D_MODE");
-
-const FastName NMaterialFlagName::FLAG_ALPHATEST = FastName("ALPHATESTVALUE");
-const FastName NMaterialFlagName::FLAG_ALPHATESTVALUE = FastName("ALPHATESTVALUE");
-const FastName NMaterialFlagName::FLAG_ALPHASTEPVALUE = FastName("ALPHASTEPVALUE");
-
 const FastName NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING("LANDSCAPE_USE_INSTANCING");
 const FastName NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING("LANDSCAPE_LOD_MORPHING");
 const FastName NMaterialFlagName::FLAG_LANDSCAPE_MORPHING_COLOR("LANDSCAPE_MORPHING_COLOR");
-
 const FastName NMaterialFlagName::FLAG_HEIGHTMAP_FLOAT_TEXTURE("HEIGHTMAP_FLOAT_TEXTURE");
-
+const FastName NMaterialFlagName::FLAG_ALPHA_TEST = FastName("ALPHATEST");
+const FastName NMaterialFlagName::FLAG_ALPHA_TEST_VALUE = FastName("ALPHATESTVALUE");
+const FastName NMaterialFlagName::FLAG_ALPHA_STEP_VALUE = FastName("ALPHASTEPVALUE");
 const FastName NMaterialFlagName::FLAG_ILLUMINATION_USED = FastName("ILLUMINATION_USED");
 const FastName NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER = FastName("ILLUMINATION_SHADOW_CASTER");
 const FastName NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER = FastName("ILLUMINATION_SHADOW_RECEIVER");
-
 const FastName NMaterialFlagName::FLAG_TEST_OCCLUSION = FastName("TEST_OCCLUSION");
-
 const FastName NMaterialFlagName::FLAG_FORCED_SHADOW_DIRECTION = FastName("FORCED_SHADOW_DIRECTION");
-
 const FastName NMaterialFlagName::FLAG_PARTICLES_DEBUG_SHOW_HEATMAP = FastName("HEATMAP");
 const FastName NMaterialFlagName::FLAG_GEO_DECAL = FastName("GEO_DECAL");
 const FastName NMaterialFlagName::FLAG_GEO_DECAL_SPECULAR = FastName("GEO_DECAL_SPECULAR");
+const FastName NMaterialFlagName::FLAG_VERTEX_DISTORTION_DEPRECATED = FastName("VERTEX_DISTORTION");
+const FastName NMaterialFlagName::FLAG_NORMAL_DETAIL = FastName("NORMAL_DETAIL");
+const FastName NMaterialFlagName::FLAG_LANDSCAPE_USE_RELAXMAP = FastName("LANDSCAPE_USE_RELAXMAP");
+const FastName NMaterialFlagName::FLAG_LANDSCAPE_HEIGHT_BLEND = FastName("LANDSCAPE_HEIGHT_BLEND");
+const FastName NMaterialFlagName::FLAG_LANDSCAPE_SEPARATE_LIGHTMAP_CHANNEL = FastName("LANDSCAPE_SEPARATE_LIGHTMAP_CHANNEL");
+const FastName NMaterialFlagName::FLAG_LANDSCAPE_HAS_METALLIC_AND_EMISSION = FastName("LANDSCAPE_HAS_METALLIC_AND_EMISSION");
+const FastName NMaterialFlagName::FLAG_LANDSCAPE_SCALED_TILES_NON_PBR = FastName("LANDSCAPE_SCALED_TILES_NON_PBR");
+const FastName NMaterialFlagName::FLAG_ALLOW_POINT_LIGHTS = FastName("ALLOW_POINT_LIGHTS");
+const FastName NMaterialFlagName::FLAG_FORCE_POINT_LIGHTS_ENABLED = FastName("FORCE_POINT_LIGHTS_ENABLED");
+const FastName NMaterialFlagName::FLAG_ENVIRONMENT_MAPPING = FastName("ENVIRONMENT_MAPPING");
+const FastName NMaterialFlagName::FLAG_ENVIRONMENT_MAPPING_NORMALMAP = FastName("ENVIRONMENT_MAPPING_NORMALMAP");
+const FastName NMaterialFlagName::FLAG_BLEND_BY_ANGLE = FastName("BLEND_BY_ANGLE");
+const FastName NMaterialFlagName::FLAG_SHADOW_RECEIVER = FastName("SHADOW_RECEIVER");
+const FastName NMaterialFlagName::FLAG_USE_SHADOW_MAP = FastName("USE_SHADOW_MAP");
+const FastName NMaterialFlagName::FLAG_DEBUG_SHADOW_CASCADES = FastName("DEBUG_SHADOW_CASCADES");
+const FastName NMaterialFlagName::FLAG_SHADOW_CASCADES_COUNT = FastName("SHADOW_CASCADES_COUNT");
+const FastName NMaterialFlagName::FLAG_SHADOW_CASCADES_BLEND = FastName("SHADOW_CASCADES_BLEND");
+const FastName NMaterialFlagName::FLAG_SHADOW_PCF = FastName("SHADOW_PCF");
+const FastName NMaterialFlagName::FLAG_DECAL_ALBEDO = FastName("DECAL_ALBEDO");
+const FastName NMaterialFlagName::FLAG_DECAL_NORMAL = FastName("DECAL_NORMAL");
+const FastName NMaterialFlagName::FLAG_DECAL_TREAD = FastName("DECAL_TREAD");
+const FastName NMaterialFlagName::FLAG_FADE_OUT_WITH_TIME = FastName("FADE_OUT_WITH_TIME");
+const FastName NMaterialFlagName::DEPTH_TARGET_IS_FRAMEBUFFER = FastName("DEPTH_TARGET_IS_FRAMEBUFFER");
+const FastName NMaterialFlagName::DEPTH_PREPASS_ENABLED = FastName("DEPTH_PREPASS_ENABLED");
+const FastName NMaterialFlagName::FLAG_VEGETATION_BEND = FastName("VEGETATION_BEND");
+const FastName NMaterialFlagName::VEGETATION_LIT = FastName("VEGETATION_LIT");
+const FastName NMaterialFlagName::FLAG_PUSH_TO_NEAR_PLANE_HACK = FastName("PUSH_TO_NEAR_PLANE_HACK");
+const FastName NMaterialFlagName::FLAG_DISTANCE_FADE_OUT = FastName("DISTANCE_FADE_OUT");
+const FastName NMaterialFlagName::FLAG_POINT_LIGHTS_OVERRIDE_SHADOW = FastName("POINT_LIGHTS_OVERRIDE_SHADOW");
+const FastName NMaterialFlagName::FLAG_DIFFUSE_IN_LIGHTMAP = FastName("DIFFUSE_IN_LIGHTMAP");
+const FastName NMaterialFlagName::FLAG_AMBIENT_ATTENUATION_BOX = FastName("AMBIENT_ATTENUATION_BOX");
+const FastName NMaterialFlagName::PASS_NAME_ENGINE_DEFINE = FastName("PASS_NAME");
+const FastName NMaterialFlagName::FLAG_DECAL_TEXTURE_COUNT = FastName("DECAL_TEXTURE_COUNT");
+const FastName NMaterialFlagName::FLAG_VIEW_MODE_OVERDRAW_HEAT = FastName("VIEW_MODE_OVERDRAW_HEAT");
+const FastName NMaterialFlagName::FLAG_WATER_RIPPLES_ENABLED = FastName("WATER_RIPPLES_ENABLED");
+const FastName NMaterialFlagName::FLAG_WATER_RIPPLES_ALLOWED = FastName("WATER_RIPPLES_ALLOWED");
+const FastName NMaterialFlagName::FLAG_INSTANCED_CHAIN = FastName("INSTANCED_CHAIN");
+const FastName NMaterialFlagName::FLAG_DIRT_COVERAGE = FastName("DIRT_COVERAGE");
+const FastName NMaterialFlagName::FLAG_WETNESS_MULTILEVEL = FastName("WETNESS_MULTILEVEL");
+const FastName NMaterialFlagName::FLAG_WETNESS_SIMPLIFIED = FastName("WETNESS_SIMPLIFIED");
+const FastName NMaterialFlagName::FLAG_COLORBLIND_MODE = FastName("COLORBLIND_MODE");
+const FastName NMaterialFlagName::FLAG_DEBUG_UNLIT = FastName("DEBUG_UNLIT");
+const FastName NMaterialFlagName::FLAG_HIGHLIGHT_COLOR = FastName("HIGHLIGHT_COLOR");
+const FastName NMaterialFlagName::FLAG_HIGHLIGHT_WAVE_ANIM = FastName("HIGHLIGHT_WAVE_ANIM");
+const FastName NMaterialFlagName::FLAG_DECAL_VERTICAL_FADE = FastName("DECAL_VERTICAL_FADE");
+const FastName NMaterialFlagName::FLAG_DECAL_BACK_SIDE_FADE = FastName("DECAL_BACK_SIDE_FADE");
+const FastName NMaterialFlagName::FLAG_WIND_ANIMATION = FastName("WIND_ANIMATION");
+const FastName NMaterialFlagName::FLAG_SHADER_ULTRA = FastName("SHADER_ULTRA");
+const FastName NMaterialFlagName::FLAG_MATERIAL_DECAL = FastName("MATERIAL_DECAL");
+const FastName NMaterialFlagName::FLAG_MATERIAL_DETAIL = FastName("MATERIAL_DETAIL");
+const FastName NMaterialFlagName::FLAG_MATERIAL_LIGHTMAP = FastName("MATERIAL_LIGHTMAP");
+const FastName NMaterialFlagName::FLAG_PBR_DECAL = FastName("PBR_DECAL");
+const FastName NMaterialFlagName::FLAG_PBR_DETAIL = FastName("PBR_DETAIL");
+const FastName NMaterialFlagName::FLAG_PBR_LIGHTMAP = FastName("PBR_LIGHTMAP");
+const FastName NMaterialFlagName::FLAG_IGNORE_GLOBAL_FLAT_COLOR = FastName("IGNORE_GLOBAL_FLAT_COLOR");
+const FastName NMaterialFlagName::FLAG_IGNORE_LIGHTMAP_ADJUSTMENT = FastName("IGNORE_LIGHTMAP_ADJUSTMENT");
+const FastName NMaterialFlagName::FLAG_IGNORE_BASE_COLOR_PBR_TINT = FastName("IGNORE_BASE_COLOR_PBR_TINT");
+const FastName NMaterialFlagName::FLAG_IGNORE_ROUGHNESS_PBR_TINT = FastName("IGNORE_ROUGHNESS_PBR_TINT");
+const FastName NMaterialFlagName::FLAG_FLORA_LOD_TRANSITION_NEAR = FastName("FLORA_LOD_TRANSITION_NEAR");
+const FastName NMaterialFlagName::FLAG_FLORA_LOD_TRANSITION_FAR = FastName("FLORA_LOD_TRANSITION_FAR");
+const FastName NMaterialFlagName::FLAG_FLORA_BILLBOARD = FastName("FLORA_BILLBOARD");
+const FastName NMaterialFlagName::FLAG_FLORA_AMBIENT_ANIMATION = FastName("FLORA_AMBIENT_ANIMATION");
+const FastName NMaterialFlagName::FLAG_FLORA_WIND_ANIMATION = FastName("FLORA_WIND_ANIMATION");
+const FastName NMaterialFlagName::FLAG_FLORA_WAVE_ANIMATION = FastName("FLORA_WAVE_ANIMATION");
+const FastName NMaterialFlagName::FLAG_FLORA_PBR_LIGHTING = FastName("FLORA_PBR_LIGHTING");
+const FastName NMaterialFlagName::FLAG_FLORA_NORMAL_MAP = FastName("FLORA_NORMAL_MAP");
+const FastName NMaterialFlagName::FLAG_FLORA_EDGE_MAP = FastName("FLORA_EDGE_MAP");
+const FastName NMaterialFlagName::FLAG_FLORA_FAKE_SHADOW = FastName("FLORA_FAKE_SHADOW");
+const FastName NMaterialFlagName::FLAG_FLORA_LAYING = FastName("FLORA_LAYING");
+const FastName NMaterialFlagName::FLAG_EMISSIVE_COLOR = FastName("EMISSIVE_COLOR");
+const FastName NMaterialFlagName::FLAG_TILED_DECAL_EMISSIVE_COLOR = FastName("TILED_DECAL_EMISSIVE_COLOR");
+const FastName NMaterialFlagName::FLAG_TILED_DECAL_NOISE_SPREADING = FastName("TILED_DECAL_NOISE_SPREADING");
+const FastName NMaterialFlagName::FLAG_TILED_DECAL_SPATIAL_SPREADING = FastName("TILED_DECAL_SPATIAL_SPREADING");
+const FastName NMaterialFlagName::FLAG_EMISSIVE_ALBEDO = FastName("EMISSIVE_ALBEDO");
+const FastName NMaterialFlagName::FLAG_TILED_DECAL_EMISSIVE_ALBEDO = FastName("TILED_DECAL_EMISSIVE_ALBEDO");
+const FastName NMaterialFlagName::FLAG_TILED_DECAL_ANIM_MASK = FastName("TILED_DECAL_ANIM_MASK");
+const FastName NMaterialFlagName::FLAG_WATER_RENDER_OBJECT = FastName("WATER_RENDER_OBJECT");
+const FastName NMaterialFlagName::FLAG_WATER_TESSELLATION = FastName("WATER_TESSELLATION");
+const FastName NMaterialFlagName::FLAG_WATER_DEFORMATION = FastName("WATER_DEFORMATION");
+const FastName NMaterialFlagName::FLAG_BILLBOARD_FACE_MAIN_CAMERA = FastName("BILLBOARD_FACE_MAIN_CAMERA");
+const FastName NMaterialFlagName::FLAG_VERTEX_VERTICAL_OFFSET = FastName("VERTEX_VERTICAL_OFFSET");
+const FastName NMaterialFlagName::FLAG_VERTEX_DISPLACEMENT = FastName("VERTEX_DISPLACEMENT");
+const FastName NMaterialFlagName::FLAG_GLOBAL_TINT = FastName("GLOBAL_TINT");
+const FastName NMaterialFlagName::FLAG_GLOBAL_PBR_TINT = FastName("GLOBAL_PBR_TINT");
 
-//quality
+// quality
 const FastName NMaterialQualityName::QUALITY_FLAG_NAME = FastName("Quality");
 const FastName NMaterialQualityName::QUALITY_GROUP_FLAG_NAME = FastName("QualityGroup");
 const FastName NMaterialQualityName::DEFAULT_QUALITY_NAME = FastName("Normal");
 
-Vector<FastName> RUNTIME_ONLY_FLAGS =
-{
-  NMaterialFlagName::FLAG_LIGHTMAPONLY,
-  NMaterialFlagName::FLAG_TEXTUREONLY,
-  NMaterialFlagName::FLAG_SETUPLIGHTMAP,
+Vector<FastName> RUNTIME_ONLY_FLAGS = {
+    NMaterialFlagName::FLAG_LIGHTMAPONLY,
+    NMaterialFlagName::FLAG_TEXTUREONLY,
+    NMaterialFlagName::FLAG_SETUPLIGHTMAP,
 
-  NMaterialFlagName::FLAG_DEBUG_UNITY_Z_NORMAL,
-  NMaterialFlagName::FLAG_DEBUG_Z_NORMAL_SCALE,
-  NMaterialFlagName::FLAG_DEBUG_NORMAL_ROTATION,
+    NMaterialFlagName::FLAG_DEBUG_UNITY_Z_NORMAL,
+    NMaterialFlagName::FLAG_DEBUG_Z_NORMAL_SCALE,
+    NMaterialFlagName::FLAG_DEBUG_NORMAL_ROTATION,
 
-  NMaterialFlagName::FLAG_VIEWALBEDO,
-  NMaterialFlagName::FLAG_VIEWAMBIENT,
-  NMaterialFlagName::FLAG_VIEWDIFFUSE,
-  NMaterialFlagName::FLAG_VIEWSPECULAR,
+    NMaterialFlagName::FLAG_VIEWALBEDO,
+    NMaterialFlagName::FLAG_VIEWAMBIENT,
+    NMaterialFlagName::FLAG_VIEWDIFFUSE,
+    NMaterialFlagName::FLAG_VIEWSPECULAR,
 
-  NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING,
-  NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING,
-  NMaterialFlagName::FLAG_LANDSCAPE_MORPHING_COLOR,
+    NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING,
+    NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING,
+    NMaterialFlagName::FLAG_LANDSCAPE_MORPHING_COLOR,
 
-  NMaterialFlagName::FLAG_HEIGHTMAP_FLOAT_TEXTURE,
+    NMaterialFlagName::FLAG_HEIGHTMAP_FLOAT_TEXTURE,
 };
 
 bool NMaterialFlagName::IsRuntimeFlag(const FastName& flag)
 {
-    auto it = std::find_if(RUNTIME_ONLY_FLAGS.begin(), RUNTIME_ONLY_FLAGS.end(), [&flag](const FastName& toFind) {
-        return flag == toFind;
-    });
+    auto it = std::find_if(RUNTIME_ONLY_FLAGS.begin(), RUNTIME_ONLY_FLAGS.end(), [&flag](const FastName& toFind)
+                           { return flag == toFind; });
     return it != RUNTIME_ONLY_FLAGS.end();
 }
 
-Vector<FastName> RUNTIME_ONLY_TEXTURES =
-{
-  NMaterialTextureName::TEXTURE_HEIGHTMAP,
-  NMaterialTextureName::TEXTURE_TANGENTSPACE,
+Vector<FastName> RUNTIME_ONLY_TEXTURES = {
+    NMaterialTextureName::TEXTURE_HEIGHTMAP,
+    NMaterialTextureName::TEXTURE_TANGENTSPACE,
 };
 
 bool NMaterialTextureName::IsRuntimeTexture(const FastName& texture)
 {
-    auto it = std::find_if(RUNTIME_ONLY_TEXTURES.begin(), RUNTIME_ONLY_TEXTURES.end(), [&texture](const FastName& toFind) {
-        return texture == toFind;
-    });
+    auto it = std::find_if(RUNTIME_ONLY_TEXTURES.begin(), RUNTIME_ONLY_TEXTURES.end(), [&texture](const FastName& toFind)
+                           { return texture == toFind; });
     return it != RUNTIME_ONLY_TEXTURES.end();
 }
 
@@ -375,4 +458,4 @@ const DAVA::String NMaterialSerializationKey::ConfigName = "configName";
 const DAVA::String NMaterialSerializationKey::ConfigCount = "configCount";
 const DAVA::String NMaterialSerializationKey::ConfigArchive = "configArchive_%d";
 const FastName NMaterialSerializationKey::DefaultConfigName = FastName("Default");
-};
+}; // namespace DAVA

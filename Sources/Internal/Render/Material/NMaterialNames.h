@@ -251,39 +251,45 @@ class NMaterialFlagName
 {
 public:
     static const FastName FLAG_BLENDING;
-
     static const FastName FLAG_VERTEXFOG;
     static const FastName FLAG_FOG_LINEAR;
     static const FastName FLAG_FOG_HALFSPACE;
     static const FastName FLAG_FOG_HALFSPACE_LINEAR;
     static const FastName FLAG_FOG_ATMOSPHERE;
-    static const FastName FLAG_FOG_ATMOSPHERE_NO_SCATTERING;
     static const FastName FLAG_FOG_ATMOSPHERE_NO_ATTENUATION;
+    static const FastName FLAG_FOG_ATMOSPHERE_NO_SCATTERING;
     static const FastName FLAG_TEXTURESHIFT;
+    static const FastName FLAG_ENABLE_FOG;
+    static const FastName FLAG_ENABLE_HIGH_QUALITY_FOG;
+    static const FastName FLAG_TEXTURE_SHIFT;
     static const FastName FLAG_TEXTURE0_ANIMATION_SHIFT;
     static const FastName FLAG_WAVE_ANIMATION;
     static const FastName FLAG_FAST_NORMALIZATION;
     static const FastName FLAG_TILED_DECAL_MASK;
     static const FastName FLAG_TILED_DECAL_ROTATION;
+    static const FastName FLAG_TILED_DECAL_TRANSFORM;
+    static const FastName FLAG_TILED_DECAL_ANIMATED_EMISSION;
+    static const FastName FLAG_TILED_DECAL_BLEND_NORMAL;
+    static const FastName FLAG_TILED_DECAL_OVERRIDE_ROUGHNESS_METALLIC;
+    static const FastName FLAG_ALBEDO_TRANSFORM;
     static const FastName FLAG_FLATCOLOR;
-    static const FastName FLAG_FLATALBEDO;
-    static const FastName FLAG_DISTANCEATTENUATION;
+    static const FastName FLAG_FLAT_ALBEDO;
+    static const FastName FLAG_DISTANCE_ATTENUATION;
     static const FastName FLAG_SPECULAR;
     static const FastName FLAG_SEPARATE_NORMALMAPS;
-
+    static const FastName FLAG_VERTEX_COLOR;
     static const FastName FLAG_SPEED_TREE_OBJECT;
+    static const FastName FLAG_SPEEDTREE_JOINT_TRANSFORM;
+    static const FastName FLAG_SPEEDTREE_JOINT_LENGTHWISE_TRANSFORM;
     static const FastName FLAG_SPHERICAL_LIT;
-
     static const FastName FLAG_TANGENT_SPACE_WATER_REFLECTIONS;
-
     static const FastName FLAG_DEBUG_UNITY_Z_NORMAL;
     static const FastName FLAG_DEBUG_Z_NORMAL_SCALE;
     static const FastName FLAG_DEBUG_NORMAL_ROTATION;
-
     static const FastName FLAG_HARD_SKINNING;
     static const FastName FLAG_SOFT_SKINNING;
-
     static const FastName FLAG_FLOWMAP_SKY;
+    static const FastName FLAG_PARTICLES_MASK;
     static const FastName FLAG_PARTICLES_FLOWMAP;
     static const FastName FLAG_PARTICLES_FLOWMAP_ANIMATION;
     static const FastName FLAG_PARTICLES_PERSPECTIVE_MAPPING;
@@ -291,41 +297,123 @@ public:
     static const FastName FLAG_PARTICLES_NOISE;
     static const FastName FLAG_PARTICLES_FRESNEL_TO_ALPHA;
     static const FastName FLAG_PARTICLES_ALPHA_REMAP;
-
+    static const FastName FLAG_PARTICLES_VERTEX_ANIMATION;
+    static const FastName FLAG_PARTICLES_VERTEX_ANIMATION_MASK;
     static const FastName FLAG_LIGHTMAPONLY;
-    static const FastName FLAG_TEXTUREONLY; //VI: this flag is for backward compatibility with old materials. See FLAG_ALBEDOONLY
+    static const FastName FLAG_TEXTUREONLY;
     static const FastName FLAG_SETUPLIGHTMAP;
     static const FastName FLAG_VIEWALBEDO;
+    static const FastName FLAG_VIEWNORMAL;
+    static const FastName FLAG_VIEWNORMAL_FINAL;
+    static const FastName FLAG_VIEWROUGHNESS;
+    static const FastName FLAG_VIEWMETALLIC;
+    static const FastName FLAG_VIEWAMBIENT_OCCLUSION;
     static const FastName FLAG_VIEWAMBIENT;
     static const FastName FLAG_VIEWDIFFUSE;
     static const FastName FLAG_VIEWSPECULAR;
-
+    static const FastName FLAG_ALPHA_EROSION;
+    static const FastName FLAG_SOFT_PARTICLES;
     static const FastName FLAG_FRAME_BLEND;
     static const FastName FLAG_FORCE_2D_MODE;
-
-    static const FastName FLAG_ALPHATEST;
-    static const FastName FLAG_ALPHATESTVALUE;
-    static const FastName FLAG_ALPHASTEPVALUE;
-
     static const FastName FLAG_LANDSCAPE_USE_INSTANCING;
     static const FastName FLAG_LANDSCAPE_LOD_MORPHING;
     static const FastName FLAG_LANDSCAPE_MORPHING_COLOR;
-
     static const FastName FLAG_HEIGHTMAP_FLOAT_TEXTURE;
-
-    //Illumination params
+    static const FastName FLAG_ALPHA_TEST;
+    static const FastName FLAG_ALPHA_TEST_VALUE;
+    static const FastName FLAG_ALPHA_STEP_VALUE;
     static const FastName FLAG_ILLUMINATION_USED;
     static const FastName FLAG_ILLUMINATION_SHADOW_CASTER;
     static const FastName FLAG_ILLUMINATION_SHADOW_RECEIVER;
-
     static const FastName FLAG_TEST_OCCLUSION;
-
+    static const FastName FLAG_FORCED_SHADOW_DIRECTION;
     static const FastName FLAG_PARTICLES_DEBUG_SHOW_HEATMAP;
-
     static const FastName FLAG_GEO_DECAL;
     static const FastName FLAG_GEO_DECAL_SPECULAR;
-
-    static const FastName FLAG_FORCED_SHADOW_DIRECTION;
+    static const FastName FLAG_VERTEX_DISTORTION_DEPRECATED;
+    static const FastName FLAG_NORMAL_DETAIL;
+    static const FastName FLAG_LANDSCAPE_USE_RELAXMAP;
+    static const FastName FLAG_LANDSCAPE_HEIGHT_BLEND;
+    static const FastName FLAG_LANDSCAPE_SEPARATE_LIGHTMAP_CHANNEL;
+    static const FastName FLAG_LANDSCAPE_HAS_METALLIC_AND_EMISSION;
+    static const FastName FLAG_LANDSCAPE_SCALED_TILES_NON_PBR;
+    static const FastName FLAG_ALLOW_POINT_LIGHTS;
+    static const FastName FLAG_FORCE_POINT_LIGHTS_ENABLED;
+    static const FastName FLAG_ENVIRONMENT_MAPPING;
+    static const FastName FLAG_ENVIRONMENT_MAPPING_NORMALMAP;
+    static const FastName FLAG_BLEND_BY_ANGLE;
+    static const FastName FLAG_SHADOW_RECEIVER;
+    static const FastName FLAG_USE_SHADOW_MAP;
+    static const FastName FLAG_DEBUG_SHADOW_CASCADES;
+    static const FastName FLAG_SHADOW_CASCADES_COUNT;
+    static const FastName FLAG_SHADOW_CASCADES_BLEND;
+    static const FastName FLAG_SHADOW_PCF;
+    static const FastName FLAG_DECAL_ALBEDO;
+    static const FastName FLAG_DECAL_NORMAL;
+    static const FastName FLAG_DECAL_TREAD;
+    static const FastName FLAG_FADE_OUT_WITH_TIME;
+    static const FastName DEPTH_TARGET_IS_FRAMEBUFFER;
+    static const FastName DEPTH_PREPASS_ENABLED;
+    static const FastName FLAG_VEGETATION_BEND;
+    static const FastName VEGETATION_LIT;
+    static const FastName FLAG_PUSH_TO_NEAR_PLANE_HACK;
+    static const FastName FLAG_DISTANCE_FADE_OUT;
+    static const FastName FLAG_POINT_LIGHTS_OVERRIDE_SHADOW;
+    static const FastName FLAG_DIFFUSE_IN_LIGHTMAP;
+    static const FastName FLAG_AMBIENT_ATTENUATION_BOX;
+    static const FastName PASS_NAME_ENGINE_DEFINE;
+    static const FastName FLAG_DECAL_TEXTURE_COUNT;
+    static const FastName FLAG_VIEW_MODE_OVERDRAW_HEAT;
+    static const FastName FLAG_WATER_RIPPLES_ENABLED;
+    static const FastName FLAG_WATER_RIPPLES_ALLOWED;
+    static const FastName FLAG_INSTANCED_CHAIN;
+    static const FastName FLAG_DIRT_COVERAGE;
+    static const FastName FLAG_WETNESS_MULTILEVEL;
+    static const FastName FLAG_WETNESS_SIMPLIFIED;
+    static const FastName FLAG_COLORBLIND_MODE;
+    static const FastName FLAG_DEBUG_UNLIT;
+    static const FastName FLAG_HIGHLIGHT_COLOR;
+    static const FastName FLAG_HIGHLIGHT_WAVE_ANIM;
+    static const FastName FLAG_DECAL_VERTICAL_FADE;
+    static const FastName FLAG_DECAL_BACK_SIDE_FADE;
+    static const FastName FLAG_WIND_ANIMATION;
+    static const FastName FLAG_SHADER_ULTRA;
+    static const FastName FLAG_MATERIAL_DECAL;
+    static const FastName FLAG_MATERIAL_DETAIL;
+    static const FastName FLAG_MATERIAL_LIGHTMAP;
+    static const FastName FLAG_PBR_DECAL;
+    static const FastName FLAG_PBR_DETAIL;
+    static const FastName FLAG_PBR_LIGHTMAP;
+    static const FastName FLAG_IGNORE_GLOBAL_FLAT_COLOR;
+    static const FastName FLAG_IGNORE_LIGHTMAP_ADJUSTMENT;
+    static const FastName FLAG_IGNORE_BASE_COLOR_PBR_TINT;
+    static const FastName FLAG_IGNORE_ROUGHNESS_PBR_TINT;
+    static const FastName FLAG_FLORA_LOD_TRANSITION_NEAR;
+    static const FastName FLAG_FLORA_LOD_TRANSITION_FAR;
+    static const FastName FLAG_FLORA_BILLBOARD;
+    static const FastName FLAG_FLORA_AMBIENT_ANIMATION;
+    static const FastName FLAG_FLORA_WIND_ANIMATION;
+    static const FastName FLAG_FLORA_WAVE_ANIMATION;
+    static const FastName FLAG_FLORA_PBR_LIGHTING;
+    static const FastName FLAG_FLORA_NORMAL_MAP;
+    static const FastName FLAG_FLORA_EDGE_MAP;
+    static const FastName FLAG_FLORA_FAKE_SHADOW;
+    static const FastName FLAG_FLORA_LAYING;
+    static const FastName FLAG_EMISSIVE_COLOR;
+    static const FastName FLAG_TILED_DECAL_EMISSIVE_COLOR;
+    static const FastName FLAG_TILED_DECAL_NOISE_SPREADING;
+    static const FastName FLAG_TILED_DECAL_SPATIAL_SPREADING;
+    static const FastName FLAG_EMISSIVE_ALBEDO;
+    static const FastName FLAG_TILED_DECAL_EMISSIVE_ALBEDO;
+    static const FastName FLAG_TILED_DECAL_ANIM_MASK;
+    static const FastName FLAG_WATER_RENDER_OBJECT;
+    static const FastName FLAG_WATER_TESSELLATION;
+    static const FastName FLAG_WATER_DEFORMATION;
+    static const FastName FLAG_BILLBOARD_FACE_MAIN_CAMERA;
+    static const FastName FLAG_VERTEX_VERTICAL_OFFSET;
+    static const FastName FLAG_VERTEX_DISPLACEMENT;
+    static const FastName FLAG_GLOBAL_TINT;
+    static const FastName FLAG_GLOBAL_PBR_TINT;
 
     static bool IsRuntimeFlag(const FastName& flag);
 };
@@ -356,6 +444,6 @@ public:
     static const FastName QUALITY_GROUP_FLAG_NAME;
     static const FastName DEFAULT_QUALITY_NAME;
 };
-};
+}; // namespace DAVA
 
 #endif /* defined(__DAVAENGINE_NMATERIAL_NAMES_H__) */
