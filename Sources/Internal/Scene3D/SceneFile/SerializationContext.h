@@ -15,6 +15,7 @@ class NMaterial;
 class Texture;
 class NMaterial;
 class PolygonGroup;
+class ParticleEmitterNode;
 
 class SerializationContext
 {
@@ -141,6 +142,9 @@ public:
     template <template <typename, typename> class Container, class T, class A>
     void GetDataNodes(Container<T, A>& container);
 
+    void AddSavedEmitterNode(ParticleEmitterNode* emitterNode);
+    Vector<ParticleEmitterNode*> GetParticleEmitterNodes();
+
 private:
     struct MaterialBinding
     {
@@ -152,6 +156,7 @@ private:
     Map<uint64, NMaterial*> importedMaterials;
     Vector<MaterialBinding> materialBindings;
     Map<PolygonGroup*, PolygonGroupLoadInfo> loadedPolygonGroups;
+    Vector<ParticleEmitterNode*> savedEmitterNodes;
 
     Scene* scene = nullptr;
     FilePath rootNodePathName;

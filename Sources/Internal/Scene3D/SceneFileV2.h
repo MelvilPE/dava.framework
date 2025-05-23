@@ -369,6 +369,8 @@ private:
      */
     bool SaveHierarchy(Entity* node, File* file, int32 level);
 
+    bool GetNestedParticleEmitterNodes(Entity* entity, Vector<VariantType>* result);
+
     bool LoadHierarchy(Scene* scene, Entity* node, File* file, int32 level);
 
     /**

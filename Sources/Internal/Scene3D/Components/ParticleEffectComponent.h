@@ -6,6 +6,7 @@
 #include "Particles/ParticleGroup.h"
 #include "Particles/ParticleRenderObject.h"
 #include "Particles/ParticleEmitterInstance.h"
+#include "Particles/Gen2/ParticleEmitterNode.h"
 #include "Reflection/Reflection.h"
 #include "Base/BaseObject.h"
 #include "Base/BaseTypes.h"
@@ -36,6 +37,12 @@ public:
     Component* Clone(Entity* toEntity) override;
     void Serialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
     void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
+
+    void DeserializeLegacyYaml(KeyedArchive* archive, SerializationContext* serializationContext);
+    void DeserializeNestedEmitters(KeyedArchive* archive, SerializationContext* serializationContext);
+
+    void SerializeLegacyYaml(KeyedArchive* archive, SerializationContext* serializationContext);
+    void SerializeNestedEmitters(KeyedArchive* archive, SerializationContext* serializationContext);
 
     void Start();
     void Stop(bool isDeleteAllParticles = true);
@@ -76,6 +83,11 @@ public:
     bool GetClippingVisible() const;
     void SetClippingVisible(bool visible);
 
+    String GetNestedEmittersComponentYaml() const;
+    void SetNestedEmittersComponentYaml(String value);
+    String GetNestedEmittersParticleEmitterNodesYaml() const;
+    void SetNestedEmittersParticleEmitterNodesYaml(String value);
+
     float32 GetStartFromTime() const;
     void SetStartFromTime(float32 time);
 
@@ -115,6 +127,9 @@ private:
     bool stopWhenEmpty = false; //if true effect is considered finished when no particles left, otherwise effect is considered finished if time>effectDuration
     bool clearOnRestart = true; // when effect is restarted repeatsCount
     bool isPaused = false;
+
+    String nestedEmittersComponentYaml = "";
+    String nestedEmittersParticleEmitterNodesYaml = "";
 
 public: //mostly editor commands
     uint32 GetEmittersCount() const;

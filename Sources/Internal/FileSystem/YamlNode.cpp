@@ -365,20 +365,41 @@ VariantType YamlNode::AsVariantType() const
         }
         else if (innerTypeName == DAVA::VariantType::TYPENAME_BYTE_ARRAY)
         {
-            const auto& byteArrayNoodes = it->second->AsVector();
-            int32 size = static_cast<int32>(byteArrayNoodes.size());
+            const auto& byteArrayNodes = it->second->AsVector();
+            int32 size = static_cast<int32>(byteArrayNodes.size());
             uint8* innerArray = new uint8[size];
+
             for (int32 i = 0; i < size; ++i)
             {
+                const std::string& strValue = byteArrayNodes[i]->AsString();
                 int32 val = 0;
-                int32 retCode = sscanf(byteArrayNoodes[i]->AsString().c_str(), "%x", &val);
-                if ((val < 0) || (val > UCHAR_MAX) || (retCode == 0))
+                int retCode = 0;
+
+                if (strValue.find("0x") == 0 || strValue.find_first_of("ABCDEFabcdef") != std::string::npos)
+                {
+                    retCode = sscanf(strValue.c_str(), "%x", &val);
+                }
+                else
+                {
+                    retCode = sscanf(strValue.c_str(), "%d", &val);
+                }
+
+                if ((retCode != 1) || (val < 0) || (val > UCHAR_MAX))
                 {
                     delete[] innerArray;
                     return retValue;
                 }
+
                 innerArray[i] = static_cast<uint8>(val);
             }
+
+            // little endian
+            for (int i = 0; i + 3 < size; i += 4)
+            {
+                std::swap(innerArray[i],     innerArray[i + 3]);
+                std::swap(innerArray[i + 1], innerArray[i + 2]);
+            }
+
             retValue.SetByteArray(innerArray, size);
             delete[] innerArray;
         }

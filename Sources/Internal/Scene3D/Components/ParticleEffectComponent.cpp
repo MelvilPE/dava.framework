@@ -27,6 +27,8 @@ DAVA_VIRTUAL_REFLECTION_IMPL(ParticleEffectComponent)
     .Field("visibleReflection", &ParticleEffectComponent::GetReflectionVisible, &ParticleEffectComponent::SetReflectionVisible)[M::DisplayName("Visible Reflection")]
     .Field("visibleRefraction", &ParticleEffectComponent::GetRefractionVisible, &ParticleEffectComponent::SetRefractionVisible)[M::DisplayName("Visible Refraction")]
     .Field("clippingVisible", &ParticleEffectComponent::GetClippingVisible, &ParticleEffectComponent::SetClippingVisible)[M::DisplayName("Clipping always visible")]
+    .Field("NestedEmittersComponentYaml", &ParticleEffectComponent::GetNestedEmittersComponentYaml, &ParticleEffectComponent::SetNestedEmittersComponentYaml)[M::DisplayName("Nested Emitters Component Yaml")]
+    .Field("NestedEmittersParticleEmitterNodesYaml", &ParticleEffectComponent::GetNestedEmittersParticleEmitterNodesYaml, &ParticleEffectComponent::SetNestedEmittersParticleEmitterNodesYaml)[M::DisplayName("Nested Emitters Particle Emitter Nodes Yaml")]
     .End();
 }
 
@@ -287,6 +289,20 @@ int32 ParticleEffectComponent::GetActiveParticlesCount()
 void ParticleEffectComponent::Serialize(KeyedArchive* archive, SerializationContext* serializationContext)
 {
     Component::Serialize(archive, serializationContext);
+
+    bool nestedEmitters = (nestedEmittersComponentYaml != "" && nestedEmittersParticleEmitterNodesYaml != "");
+    if (!nestedEmitters)
+    {
+        SerializeLegacyYaml(archive, serializationContext);
+    }
+    else
+    {
+        SerializeNestedEmitters(archive, serializationContext);
+    }
+}
+
+void ParticleEffectComponent::SerializeLegacyYaml(KeyedArchive* archive, SerializationContext* serializationContext)
+{
     archive->SetUInt32("pe.version", 1);
     archive->SetBool("pe.stopWhenEmpty", stopWhenEmpty);
     archive->SetFloat("pe.effectDuration", effectDuration);
@@ -311,49 +327,92 @@ void ParticleEffectComponent::Serialize(KeyedArchive* archive, SerializationCont
     emittersArch->Release();
 }
 
+void ParticleEffectComponent::SerializeNestedEmitters(KeyedArchive* archive, SerializationContext* serializationContext)
+{
+    if (!archive->LoadFromYamlString(nestedEmittersComponentYaml))
+    {
+        Logger::Warning("[ParticleEffectComponent::SerializeNestedEmitters] failed wrong data in nestedEmittersComponentYaml");
+        return;
+    }
+}
+
 void ParticleEffectComponent::Deserialize(KeyedArchive* archive, SerializationContext* serializationContext)
 {
     Component::Deserialize(archive, serializationContext);
-    loadedVersion = archive->GetUInt32("pe.version", 0);
 
-    if (loadedVersion == 1) //new effect - load everything here
+    bool nestedEmitters = archive->GetBool("pe.nestedEmitters", false);
+    if (!nestedEmitters)
     {
-        const ParticlesQualitySettings::FilepathSelector* filepathSelector = QualitySettingsSystem::Instance()->GetParticlesQualitySettings().GetOrCreateFilepathSelector();
-
-        stopWhenEmpty = archive->GetBool("pe.stopWhenEmpty");
-        effectDuration = archive->GetFloat("pe.effectDuration");
-        repeatsCount = archive->GetUInt32("pe.repeatsCount");
-        clearOnRestart = archive->GetBool("pe.clearOnRestart");
-        uint32 emittersCount = archive->GetUInt32("pe.emittersCount");
-        startFromTime = archive->GetFloat("pe.startFromTime");
-        KeyedArchive* emittersArch = archive->GetArchive("pe.emitters");
-        emitterInstances.resize(emittersCount);
-        for (uint32 i = 0; i < emittersCount; ++i)
-        {
-            emitterInstances[i].ConstructInplace(this);
-
-            KeyedArchive* emitterArch = emittersArch->GetArchive(KeyedArchive::GenKeyFromIndex(i));
-            String filename = emitterArch->GetString("emitter.filename");
-            if (!filename.empty())
-            {
-                emitterInstances[i]->SetFilePath(serializationContext->GetScenePath() + filename);
-                FilePath qualityFilepath = emitterInstances[i]->GetFilePath();
-                if (filepathSelector)
-                {
-                    qualityFilepath = filepathSelector->SelectFilepath(emitterInstances[i]->GetFilePath());
-                }
-                emitterInstances[i]->SetEmitter(ParticleEmitter::LoadEmitter(qualityFilepath));
-            }
-            else
-            {
-                emitterInstances[i]->SetEmitter(new ParticleEmitter());
-            }
-            emitterInstances[i]->SetSpawnPosition(emitterArch->GetVector3("emitter.position"));
-        }
-        uint32 savedFlags = RenderObject::SERIALIZATION_CRITERIA & archive->GetUInt32("ro.flags", RenderObject::VISIBLE);
-        effectRenderObject->SetFlags(savedFlags | (effectRenderObject->GetFlags() & ~PARTICLE_FLAGS_SERIALIZATION_CRITERIA));
-        RebuildEffectModifiables();
+        DeserializeLegacyYaml(archive, serializationContext);
     }
+    else
+    {
+        DeserializeNestedEmitters(archive, serializationContext);
+    }
+}
+
+void ParticleEffectComponent::DeserializeLegacyYaml(KeyedArchive* archive, SerializationContext* serializationContext)
+{
+    const ParticlesQualitySettings::FilepathSelector* filepathSelector = QualitySettingsSystem::Instance()->GetParticlesQualitySettings().GetOrCreateFilepathSelector();
+    loadedVersion = archive->GetUInt32("pe.version", 0);
+    stopWhenEmpty = archive->GetBool("pe.stopWhenEmpty");
+    effectDuration = archive->GetFloat("pe.effectDuration");
+    repeatsCount = archive->GetUInt32("pe.repeatsCount");
+    clearOnRestart = archive->GetBool("pe.clearOnRestart");
+    uint32 emittersCount = archive->GetUInt32("pe.emittersCount");
+    startFromTime = archive->GetFloat("pe.startFromTime");
+    KeyedArchive* emittersArch = archive->GetArchive("pe.emitters");
+    emitterInstances.resize(emittersCount);
+    for (uint32 i = 0; i < emittersCount; ++i)
+    {
+        emitterInstances[i].ConstructInplace(this);
+
+        KeyedArchive* emitterArch = emittersArch->GetArchive(KeyedArchive::GenKeyFromIndex(i));
+        String filename = emitterArch->GetString("emitter.filename");
+        if (!filename.empty())
+        {
+            emitterInstances[i]->SetFilePath(serializationContext->GetScenePath() + filename);
+            FilePath qualityFilepath = emitterInstances[i]->GetFilePath();
+            if (filepathSelector)
+            {
+                qualityFilepath = filepathSelector->SelectFilepath(emitterInstances[i]->GetFilePath());
+            }
+            emitterInstances[i]->SetEmitter(ParticleEmitter::LoadEmitter(qualityFilepath));
+        }
+        else
+        {
+            emitterInstances[i]->SetEmitter(new ParticleEmitter());
+        }
+        emitterInstances[i]->SetSpawnPosition(emitterArch->GetVector3("emitter.position"));
+    }
+    uint32 savedFlags = RenderObject::SERIALIZATION_CRITERIA & archive->GetUInt32("ro.flags", RenderObject::VISIBLE);
+    effectRenderObject->SetFlags(savedFlags | (effectRenderObject->GetFlags() & ~PARTICLE_FLAGS_SERIALIZATION_CRITERIA));
+    RebuildEffectModifiables();
+}
+
+void ParticleEffectComponent::DeserializeNestedEmitters(KeyedArchive* archive, SerializationContext* serializationContext)
+{
+    nestedEmittersComponentYaml = archive->SaveToYamlString();
+
+    ScopedPtr<KeyedArchive> nodesArchive(new KeyedArchive());
+
+    Vector<VariantType> nodesVariants;
+    Vector<ParticleEmitterNode*> emitterNodes = serializationContext->GetParticleEmitterNodes();
+    for (uint32 emitterNodeIndex = 0; emitterNodeIndex < emitterNodes.size(); emitterNodeIndex++)
+    {
+        ParticleEmitterNode* emitterNode = emitterNodes[emitterNodeIndex];
+
+        ScopedPtr<KeyedArchive> nodeArchive(new KeyedArchive());
+        nodeArchive->LoadFromYamlString(emitterNode->GetNodeYaml());
+
+        VariantType variantArch;
+        variantArch.SetKeyedArchive(nodeArchive);
+        nodesVariants.push_back(variantArch);
+    }
+    
+    nodesArchive->SetVariantVector("ParticleEmitterNodes", nodesVariants);
+    
+    nestedEmittersParticleEmitterNodesYaml = nodesArchive->SaveToYamlString();
 }
 
 void ParticleEffectComponent::CollapseOldEffect(SerializationContext* serializationContext)
@@ -561,6 +620,22 @@ bool ParticleEffectComponent::GetClippingVisible() const
 void ParticleEffectComponent::SetClippingVisible(bool visible)
 {
     effectRenderObject->SetClippingVisible(visible);
+}
+String ParticleEffectComponent::GetNestedEmittersComponentYaml() const
+{
+    return nestedEmittersComponentYaml;
+}
+void ParticleEffectComponent::SetNestedEmittersComponentYaml(String value)
+{
+    nestedEmittersComponentYaml = value;
+}
+String ParticleEffectComponent::GetNestedEmittersParticleEmitterNodesYaml() const
+{
+    return nestedEmittersParticleEmitterNodesYaml;
+}
+void ParticleEffectComponent::SetNestedEmittersParticleEmitterNodesYaml(String value)
+{
+    nestedEmittersParticleEmitterNodesYaml = value;
 }
 
 void ParticleEffectComponent::ReloadEmitters()

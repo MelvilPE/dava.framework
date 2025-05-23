@@ -38,6 +38,8 @@
 
 #include "Scene3D/Converters/SpeedTreeConverter.h"
 
+#include "Particles/Gen2/ParticleEmitterNode.h"
+
 #include "Job/JobManager.h"
 
 #include <functional>
@@ -212,6 +214,19 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath& filename, Scene* scen
         }
     }
 
+    Vector<VariantType> nestedEmitterNodes;
+    if (!GetNestedParticleEmitterNodes(scene, &nestedEmitterNodes))
+    {
+        Logger::Error("SceneFileV2::SaveScene failed to receive ParticleEmitterNodes from ParticleEffectComponent: %s", filename.GetAbsolutePathname().c_str());
+        SetError(ERROR_FILE_WRITE_ERROR);
+        return GetError();
+    }
+
+    for (uint32 emitterNodeIndex = 0; emitterNodeIndex < nestedEmitterNodes.size(); emitterNodeIndex++)
+    {
+        serializableNodesCount++;
+    }
+
     // save datanodes count
     if (sizeof(uint32) != file->Write(&serializableNodesCount, sizeof(uint32)))
     {
@@ -238,6 +253,17 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath& filename, Scene* scen
     // sort in ascending ID order
     Set<DataNode*, std::function<bool(DataNode*, DataNode*)>> orderedNodes(nodes.begin(), nodes.end(),
                                                                            [](DataNode* a, DataNode* b) { return a->GetNodeID() < b->GetNodeID(); });
+
+    for (uint32 emitterNodeIndex = 0; emitterNodeIndex < nestedEmitterNodes.size(); emitterNodeIndex++)
+    {
+        KeyedArchive* arch = nestedEmitterNodes[emitterNodeIndex].AsKeyedArchive();
+        if (!arch->Save(file))
+        {
+            Logger::Error("SceneFileV2::SaveScene failed to write ParticleEmitterNodes file: %s", filename.GetAbsolutePathname().c_str());
+            SetError(ERROR_FILE_WRITE_ERROR);
+            return GetError();
+        }
+    }
 
     // save the rest of datanodes
     for (auto node : orderedNodes)
@@ -804,6 +830,11 @@ bool SceneFileV2::LoadDataNode(Scene* scene, DataNode* parent, File* file)
             serializationContext.AddLoadedPolygonGroup(static_cast<PolygonGroup*>(node), currFilePos);
         }
 
+        if (name == "ParticleEmitterNode")
+        {
+            serializationContext.AddSavedEmitterNode(static_cast<ParticleEmitterNode*>(node));
+        }
+
         int32 childrenCount = archive->GetInt32("#childrenCount", 0);
         DVASSERT(0 == childrenCount && "We don't support hierarchical dataNodes load.");
 
@@ -880,6 +911,55 @@ bool SceneFileV2::SaveHierarchy(Entity* node, File* file, int32 level)
         Entity* child = node->GetChild(ci);
         SaveHierarchy(child, file, level + 1);
     }
+    return true;
+}
+
+bool SceneFileV2::GetNestedParticleEmitterNodes(Entity* entity, Vector<VariantType>* result)
+{
+    for (int childrenIndex = 0; childrenIndex < entity->GetChildrenCount(); ++childrenIndex)
+    {
+        Entity* child = entity->GetChild(childrenIndex);
+        if (!GetNestedParticleEmitterNodes(child, result))
+        {
+            return false;
+        }
+
+        ScopedPtr<KeyedArchive> archive(new KeyedArchive());
+        child->Save(archive, &serializationContext);
+
+        ParticleEffectComponent* effect = child->GetComponent<ParticleEffectComponent>();
+        if (!effect)
+        {
+            continue;
+        }
+            
+        String nestedEmittersParticleEmitterNodesYaml = effect->GetNestedEmittersParticleEmitterNodesYaml();
+        if (nestedEmittersParticleEmitterNodesYaml.empty())
+        {
+            continue;
+        }
+
+        ScopedPtr<KeyedArchive> nodesArchive(new KeyedArchive());
+        if (!nodesArchive->LoadFromYamlString(nestedEmittersParticleEmitterNodesYaml))
+        {
+            Logger::Warning("[SceneFileV2::GetNestedParticleEmitterNodes] failed wrong data in nestedEmittersParticleEmitterNodesYaml");
+            return false;
+        }
+
+        if (!nodesArchive->IsKeyExists("ParticleEmitterNodes"))
+        {
+            Logger::Warning("[SceneFileV2::GetNestedParticleEmitterNodes] failed missing ParticleEmitterNodes variant vector key in nestedEmittersParticleEmitterNodesYaml data");
+            return false;
+        }
+
+        Vector<VariantType> nodesVariants = nodesArchive->GetVariantVector("ParticleEmitterNodes");
+        for (uint32 variantIndex = 0; variantIndex < nodesVariants.size(); variantIndex++)
+        {
+            VariantType variant = nodesVariants[variantIndex];
+            result->push_back(variant);
+        }
+    }
+
     return true;
 }
 

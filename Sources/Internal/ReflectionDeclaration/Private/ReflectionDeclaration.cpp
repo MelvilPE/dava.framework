@@ -45,6 +45,7 @@
 #include "Particles/ParticleEmitterInstance.h"
 #include "Particles/ParticleLayer.h"
 #include "Particles/ParticleForce.h"
+#include "Particles/Gen2/ParticleEmitterNode.h"
 #include "Render/3D/PolygonGroup.h"
 #include "Render/Highlevel/LandscapeSubdivision.h"
 #include "Render/Highlevel/RenderObject.h"
@@ -352,6 +353,7 @@ void RegisterPermanentNames()
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(Entity);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(GeoDecalComponent);
     DAVA_REFLECTION_REGISTER_CUSTOM_PERMANENT_NAME(PartilceEmitterLoadProxy, "ParticleEmitter3D");
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(ParticleEmitterNode);
 
     // UI controls
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UI3DView);

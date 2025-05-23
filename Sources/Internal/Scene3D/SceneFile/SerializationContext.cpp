@@ -10,6 +10,7 @@
 
 #include "Render/Material/NMaterialNames.h"
 #include "Render/Texture.h"
+#include "Particles/Gen2/ParticleEmitterNode.h"
 
 namespace DAVA
 {
@@ -91,5 +92,15 @@ bool SerializationContext::LoadPolygonGroupData(File* file)
         }
     }
     return resultLoaded;
+}
+
+void SerializationContext::AddSavedEmitterNode(ParticleEmitterNode* emitterNode)
+{
+    savedEmitterNodes.push_back(emitterNode);
+}
+
+Vector<ParticleEmitterNode*> SerializationContext::GetParticleEmitterNodes()
+{
+    return savedEmitterNodes;
 }
 }

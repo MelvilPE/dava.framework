@@ -158,6 +158,7 @@
 #include "Particles/ParticleEmitter.h"
 #include "Particles/ParticleLayer.h"
 #include "Particles/Particle.h"
+#include "Particles/Gen2/ParticleEmitterNode.h"
 
 // 3D core classes
 #include "Scene3D/SceneFileV2.h"
