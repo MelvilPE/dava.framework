@@ -38,6 +38,21 @@ public:
     KeyedArchive();
     KeyedArchive(const KeyedArchive& arc);
 
+    enum eVersion : uint8
+    {
+      Legacy = 0x0,
+      StringMap = 0x1,
+      RegisterMap = 0x2,
+      LatestValid = 0x2,
+    };
+
+    enum eRegisteredMapTag : uint8
+    {
+      TopArchive = 0x0,
+      SubArchive = 0x1,
+      EmptyArchive = 0xFF,
+    };
+
     /**
         \brief Dumps archive to console
 	 */
@@ -409,7 +424,7 @@ public:
         \brief Function loads data from given file.
         \param[in] file to load from
 	 */
-    bool Load(File* file);
+    bool Load(File* file, KeyedArchive* registry = nullptr);
     /**
         \brief Function saves data to given file.
         \param[in] file to save

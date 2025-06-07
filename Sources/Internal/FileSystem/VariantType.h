@@ -550,7 +550,7 @@ public:
 		\brief Function to read variable to file, to it current position
 		\returns true if variable read successfully
 	 */
-    bool Read(File* fp);
+    bool Read(File* fp, KeyedArchive* registry = nullptr);
 
     /**
 		\brief Operator to compare variant types

@@ -68,7 +68,7 @@ bool KeyedArchive::Load(const FilePath& pathName)
     return ret;
 }
 
-bool KeyedArchive::Load(File* archive)
+bool KeyedArchive::Load(File* archive, KeyedArchive* registry)
 {
     DAVA::Array<char, 2> header;
     uint32 wasRead = archive->Read(header.data(), 2);
@@ -77,15 +77,42 @@ bool KeyedArchive::Load(File* archive)
         Logger::Error("[KeyedArchive] error loading keyed archive from file: %s, filesize: %d", archive->GetFilename().GetAbsolutePathname().c_str(), archive->GetSize());
         return false;
     }
-    else if ((header[0] != 'K') || (header[1] != 'A'))
+
+    if (header[0] != 'K' || header[1] != 'A')
     {
-        const bool seekResult = archive->Seek(0, File::SEEK_FROM_START);
-        if (!seekResult)
+        Logger::Error("[KeyedArchive] error loading keyed archive signature from file: %s, filesize: %d", archive->GetFilename().GetAbsolutePathname().c_str(), archive->GetSize());
+        return false;
+    }
+
+    eVersion version = eVersion::Legacy;
+    if (sizeof(version) != archive->Read(&version, sizeof(version)))
+    {
+        Logger::Error("[KeyedArchive] failed reading version from file: %s, filesize: %d", archive->GetFilename().GetAbsolutePathname().c_str(), archive->GetSize());
+        return false;
+    }
+
+    eRegisteredMapTag tag = eRegisteredMapTag::EmptyArchive;
+    if (sizeof(tag) != archive->Read(&tag, sizeof(tag)))
+    {
+        Logger::Error("[KeyedArchive] failed reading registered map tag from file: %s, filesize: %d", archive->GetFilename().GetAbsolutePathname().c_str(), archive->GetSize());
+        return false;
+    }
+
+    if (version != eVersion::StringMap && version != eVersion::RegisterMap)
+    {
+        Logger::Error("[KeyedArchive] error loading keyed archive, because version is incorrect");
+        return false;
+    }
+
+    if (version == eVersion::StringMap)
+    {
+        uint32 numberOfItems = 0;
+        if (sizeof(numberOfItems) != archive->Read(&numberOfItems, sizeof(numberOfItems)))
         {
-            Logger::Error("[KeyedArchive] seek failed from file: %s, filesize: %d", archive->GetFilename().GetAbsolutePathname().c_str(), archive->GetSize());
+            Logger::Error("[KeyedArchive] error loading keyed archive body, failed to read StringMap number of items");
             return false;
         }
-        while (!archive->IsEof())
+        for (uint32 item = 0; item < numberOfItems; ++item)
         {
             VariantType key;
 
@@ -95,55 +122,167 @@ bool KeyedArchive::Load(File* archive)
             }
             if (!key.Read(archive))
             {
+                Logger::Error("[KeyedArchive] error loading keyed archive body, failed to read a StringMap key");
                 return false;
             }
             VariantType value;
             if (!value.Read(archive))
             {
+                Logger::Error("[KeyedArchive] error loading keyed archive body, failed to read a StringMap value");
                 return false;
             }
 
             SetVariant(key.AsString(), std::move(value));
         }
+
         return true;
     }
 
-    uint16 version = 0;
-    if (2 != archive->Read(&version, 2))
+    if (version == eVersion::RegisterMap)
     {
-        return false;
-    }
-    if (version != 1)
-    {
-        Logger::Error("[KeyedArchive] error loading keyed archive, because version is incorrect");
-        return false;
-    }
-    uint32 numberOfItems = 0;
-    if (4 != archive->Read(&numberOfItems, 4))
-    {
-        return false;
-    }
-    for (uint32 item = 0; item < numberOfItems; ++item)
-    {
-        VariantType key;
-
-        if (archive->IsEof())
+        if (tag == eRegisteredMapTag::EmptyArchive)
         {
-            break;
-        }
-        if (!key.Read(archive))
-        {
-            return false;
-        }
-        VariantType value;
-        if (!value.Read(archive))
-        {
-            return false;
+            return true;
         }
 
-        SetVariant(key.AsString(), std::move(value));
+        if (tag == eRegisteredMapTag::TopArchive)
+        {
+            uint32 numberOfKeys = 0;
+            if (sizeof(numberOfKeys) != archive->Read(&numberOfKeys, sizeof(numberOfKeys)))
+            {
+                Logger::Error("[KeyedArchive] error loading keyed archive, failed to read number of keys in TopArchive");
+                return false;
+            }
+
+            Vector<String> keys;
+            for (uint32 item = 0; item < numberOfKeys; ++item)
+            {
+                uint16 keySize = 0;
+                if (sizeof(keySize) != archive->Read(&keySize, sizeof(keySize)))
+                {
+                    Logger::Error("[KeyedArchive] error loading keyed archive, failed to read keySize in TopArchive");
+                    return false;
+                }
+
+                String key = "";
+                if (keySize > 0)
+                {
+                    Vector<char> buffer;
+                    for (uint16 charIndex = 0; charIndex < keySize; charIndex++)
+                    {
+                        char character;
+                        if (sizeof(character) != archive->Read(&character, sizeof(character)))
+                        {
+                            Logger::Error("[KeyedArchive] error loading keyed archive, failed to read a string key character in TopArchive");
+                            return false;
+                        }
+
+                        buffer.push_back(character);
+                    }
+
+                    key = String(buffer.begin(), buffer.end());
+                }
+
+                keys.push_back(key);
+            }
+
+            Vector<uint32> keyHashes;
+            for (uint32 item = 0; item < numberOfKeys; ++item)
+            {
+                uint32 keyHash = 0;
+                if (sizeof(keyHash) != archive->Read(&keyHash, sizeof(keyHash)))
+                {
+                    Logger::Error("[KeyedArchive] error loading keyed archive, failed to read keyHash in TopArchive");
+                    return false;
+                }
+
+                keyHashes.push_back(keyHash);
+            }
+            
+            // We want to use keyHash value to get back the key in itself
+            ScopedPtr<KeyedArchive> registry(new KeyedArchive());
+            for (uint32 item = 0; item < numberOfKeys; ++item)
+            {
+                VariantType key;
+                key.SetString(std::to_string(keyHashes[item]));
+                registry->SetString(key.AsString(), keys[item]);
+            }
+
+            uint32 numberOfItems = 0;
+            if (sizeof(numberOfItems) != archive->Read(&numberOfItems, sizeof(numberOfItems)))
+            {
+                Logger::Error("[KeyedArchive] error loading keyed archive body, failed to read number of items in TopArchive");
+                return false;
+            }
+
+            for (uint32 item = 0; item < numberOfItems; ++item)
+            {
+                uint32 keyHash = 0;
+                if (sizeof(keyHash) != archive->Read(&keyHash, sizeof(keyHash)))
+                {
+                    Logger::Error("[KeyedArchive] error loading keyed archive body, failed to read keyHash in TopArchive");
+                    return false;
+                }
+
+                VariantType key;
+                key.SetString(registry->GetString(std::to_string(keyHash)));
+
+                VariantType value;
+                if (!value.Read(archive, registry))
+                {
+                    Logger::Error("[KeyedArchive] error loading keyed archive body, failed to read a TopArchive variant value");
+                    return false;
+                }
+
+                SetVariant(key.AsString(), std::move(value));
+            } 
+
+            return true;
+        }
+
+        if (tag == eRegisteredMapTag::SubArchive)
+        {
+            if (!registry)
+            {
+                Logger::Error("[KeyedArchive] error loading keyed archive body, registry is not initialized");
+                return false;
+            }
+
+            uint32 numberOfItems = 0;
+            if (sizeof(numberOfItems) != archive->Read(&numberOfItems, sizeof(numberOfItems)))
+            {
+                Logger::Error("[KeyedArchive] error loading keyed archive body, failed to read SubArchive number of items");
+                return false;
+            }
+
+            for (uint32 item = 0; item < numberOfItems; ++item)
+            {
+                uint32 keyHash = 0;
+                if (sizeof(keyHash) != archive->Read(&keyHash, sizeof(keyHash)))
+                {
+                    Logger::Error("[KeyedArchive] error loading keyed archive body, failed to read keyHash in SubArchive");
+                    return false;
+                }
+
+                VariantType key;
+                key.SetString(registry->GetString(std::to_string(keyHash)));
+
+                VariantType value;
+                if (!value.Read(archive, registry))
+                {
+                    Logger::Error("[KeyedArchive] error loading keyed archive body, failed to read a SubArchive variant value");
+                    return false;
+                }
+
+                SetVariant(key.AsString(), std::move(value));
+            }
+
+            return true;
+        }
     }
-    return true;
+    
+    Logger::Error("[KeyedArchive] error loading keyed archive, archive version is not supported: %d", static_cast<int>(version));
+    return false;
 }
 
 bool KeyedArchive::Save(const FilePath& pathName) const

@@ -1238,7 +1238,7 @@ bool VariantType::Write(File* fp) const
     return true;
 }
 
-bool VariantType::Read(File* fp)
+bool VariantType::Read(File* fp, KeyedArchive* registry)
 {
     uint32 read = fp->Read(&type, 1);
     if (read != 1)
@@ -1332,55 +1332,85 @@ bool VariantType::Read(File* fp)
     break;
     case TYPE_STRING:
     {
-        uint32 len;
-        read = fp->Read(&len, 4);
-        if (read != 4)
+        if (!registry)
         {
-            return false;
-        }
-
-        stringValue = new String(len, '\0');
-        read = fp->Read(&(*stringValue)[0], len);
-        if (read != len)
-        {
-            delete stringValue;
-            stringValue = nullptr;
-        }
-
-        uint32 slen = static_cast<uint32>(strlen(stringValue->c_str())); //we meet situations when string was "aa\0\0"
-        if (slen != len)
-        {
-            stringValue->resize(slen);
-        }
-
-        return (read == len);
-    }
-    case TYPE_WIDE_STRING:
-    {
-        uint32 len;
-        read = fp->Read(&len, 4);
-        if (read != 4)
-        {
-            return false;
-        }
-
-        wideStringValue = new WideString();
-        wideStringValue->resize(len);
-        for (uint32 k = 0; k < len; ++k)
-        {
-            wchar_t c;
-            read = fp->Read(&c, sizeof(wchar_t));
-            if (read != sizeof(wchar_t))
+            uint32 len;
+            read = fp->Read(&len, 4);
+            if (read != 4)
             {
                 return false;
             }
-            (*wideStringValue)[k] = c;
+
+            stringValue = new String(len, '\0');
+            read = fp->Read(&(*stringValue)[0], len);
+            if (read != len)
+            {
+                delete stringValue;
+                stringValue = nullptr;
+            }
+
+            uint32 slen = static_cast<uint32>(strlen(stringValue->c_str())); //we meet situations when string was "aa\0\0"
+            if (slen != len)
+            {
+                stringValue->resize(slen);
+            }
+
+            return (read == len);
         }
-        // convert into utf8 string
-        String* str = new String(UTF8Utils::EncodeToUTF8(*wideStringValue));
-        delete wideStringValue;
-        stringValue = str;
-        type = TYPE_STRING;
+        else
+        {
+            uint32 keyHash = 0;
+            if (sizeof(keyHash) != fp->Read(&keyHash, sizeof(keyHash)))
+            {
+                return false;
+            }
+
+            stringValue = new String(registry->GetString(std::to_string(keyHash)));
+            return true;
+        }
+    }
+    case TYPE_WIDE_STRING:
+    {
+        if (!registry)
+        {
+            uint32 len;
+            read = fp->Read(&len, 4);
+            if (read != 4)
+            {
+                return false;
+            }
+
+            wideStringValue = new WideString();
+            wideStringValue->resize(len);
+            for (uint32 k = 0; k < len; ++k)
+            {
+                wchar_t c;
+                read = fp->Read(&c, sizeof(wchar_t));
+                if (read != sizeof(wchar_t))
+                {
+                    return false;
+                }
+                (*wideStringValue)[k] = c;
+            }
+            // convert into utf8 string
+            String* str = new String(UTF8Utils::EncodeToUTF8(*wideStringValue));
+            delete wideStringValue;
+            stringValue = str;
+            type = TYPE_STRING;
+            return true;
+        }
+        else
+        {
+            uint32 keyHash = 0;
+            if (sizeof(keyHash) != fp->Read(&keyHash, sizeof(keyHash)))
+            {
+                return false;
+            }
+
+            stringValue = new String(registry->GetString(std::to_string(keyHash)));
+            type = TYPE_STRING;
+            return true;
+        }
     }
     break;
     case TYPE_BYTE_ARRAY:
@@ -1421,7 +1451,7 @@ bool VariantType::Read(File* fp)
         }
         ScopedPtr<UnmanagedMemoryFile> pF(new UnmanagedMemoryFile(pData.data(), len));
         pointerValue = new KeyedArchive();
-        static_cast<KeyedArchive*>(pointerValue)->Load(pF);
+        static_cast<KeyedArchive*>(pointerValue)->Load(pF, registry);
     }
     break;
     case TYPE_INT64:
@@ -1515,19 +1545,35 @@ bool VariantType::Read(File* fp)
 
     case TYPE_FASTNAME:
     {
-        uint32 len = 0;
-        read = fp->Read(&len, 4);
-        if (read != 4)
+        if (!registry)
         {
-            return false;
-        }
+            uint32 len = 0;
+            read = fp->Read(&len, 4);
+            if (read != 4)
+            {
+                return false;
+            }
 
-        Vector<char> buf(len + 1, 0);
-        read = fp->Read(buf.data(), len);
-        fastnameValue = new FastName(buf.data());
-        if (read != len)
+            Vector<char> buf(len + 1, 0);
+            read = fp->Read(buf.data(), len);
+            fastnameValue = new FastName(buf.data());
+            if (read != len)
+            {
+                return false;
+            }
+
+            return true;
+        }
+        else
         {
-            return false;
+            uint32 keyHash = 0;
+            if (sizeof(keyHash) != fp->Read(&keyHash, sizeof(keyHash)))
+            {
+                return false;
+            }
+
+            fastnameValue = new FastName(registry->GetString(std::to_string(keyHash)));
+            return true;
         }
     }
     break;
@@ -1544,17 +1590,31 @@ bool VariantType::Read(File* fp)
     break;
     case TYPE_FILEPATH:
     {
-        uint32 len;
-        read = fp->Read(&len, 4);
-        if (read != 4)
+        if (!registry)
         {
-            return false;
-        }
+            uint32 len;
+            read = fp->Read(&len, 4);
+            if (read != 4)
+            {
+                return false;
+            }
 
-        Vector<char> buf(len + 1, 0);
-        read = fp->Read(buf.data(), len);
-        filepathValue = new FilePath(buf.data());
-        return (read == len);
+            Vector<char> buf(len + 1, 0);
+            read = fp->Read(buf.data(), len);
+            filepathValue = new FilePath(buf.data());
+            return (read == len);
+        }
+        else
+        {
+            uint32 keyHash = 0;
+            if (sizeof(keyHash) != fp->Read(&keyHash, sizeof(keyHash)))
+            {
+                return false;
+            }
+
+            filepathValue = new FilePath(registry->GetString(std::to_string(keyHash)));
+            return true;
+        }
     }
     case TYPE_RECT:
     {
@@ -1580,7 +1640,7 @@ bool VariantType::Read(File* fp)
         for (uint32 variantIndex = 0; variantIndex < variantsLength; variantIndex++)
         {
             VariantType variant;
-            if (!variant.Read(fp))
+            if (!variant.Read(fp, registry))
             {
                 return false;
             }
