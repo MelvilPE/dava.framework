@@ -108,7 +108,7 @@ protected:
      * @param sound Sound event to auto-trigger
      */
     void AddAutoTriggerSound(Entity* soundOwner, SoundEvent* sound);
-    
+
     /**
      * @brief Remove auto-trigger sound
      * @param soundOwner Entity that owns the sound

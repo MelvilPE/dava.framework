@@ -21,12 +21,10 @@ DAVA_VIRTUAL_REFLECTION_IMPL(ParticleEmitterNode)
 ParticleEmitterNode::ParticleEmitterNode()
     : DataNode()
 {
-
 }
 
 ParticleEmitterNode::~ParticleEmitterNode()
 {
-
 }
 
 void ParticleEmitterNode::Save(KeyedArchive* archive, SerializationContext* serializationContext)

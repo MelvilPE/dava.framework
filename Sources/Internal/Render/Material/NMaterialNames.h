@@ -113,8 +113,6 @@ public:
     static const FastName TEXTURE_DIRT_HEIGHTMAP;
     static const FastName TEXTURE_WETNESS_BOUNDARY;
     static const FastName TEXTURE_VERTEX_ANIMATION_TEXTURE;
-    static const FastName TEXTURE_DYNAMIC_REFLECTION;
-    static const FastName TEXTURE_DYNAMIC_REFRACTION;
     static const FastName TEXTURE_DYNAMIC_SHADOW_MAP;
     static const FastName TEXTURE_DYNAMIC_DEPTH_PREPASS;
     static const FastName TEXTURE_DYNAMIC_BLUE_NOISE;
@@ -123,7 +121,6 @@ public:
     static const FastName TEXTURE_DYNAMIC_SPECULAR_REFLECTION_MAP;
     static const FastName TEXTURE_DYNAMIC_DIFFUSE_IRRADIANCE_MAP;
     static const FastName TEXTURE_DYNAMIC_SRC_0;
-    static const FastName TEXTURE_PARTICLES_RT;
     static const FastName TEXTURE_VEGETATION_COLOR_MAP;
     static const FastName TEXTURE_VEGETATION_DENSITY_MAP;
     static const FastName TEXTURE_PBR_BASE_COLOR_MAP;

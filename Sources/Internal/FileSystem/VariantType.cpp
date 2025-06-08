@@ -56,7 +56,7 @@ const String VariantType::TYPENAME_QUATERNION = "Quaternion";
 const String VariantType::TYPENAME_TRANSFORM = "Transform";
 const String VariantType::TYPENAME_AABBOX2 = "AABBox2";
 
-const Array<VariantType::PairTypeName, VariantType::TYPES_COUNT> VariantType::variantNamesMap = 
+const Array<VariantType::PairTypeName, VariantType::TYPES_COUNT> VariantType::variantNamesMap =
 { { VariantType::PairTypeName(VariantType::TYPE_NONE, TYPENAME_UNKNOWN, nullptr),
     VariantType::PairTypeName(VariantType::TYPE_BOOLEAN, TYPENAME_BOOLEAN, MetaInfo::Instance<bool>()),
     VariantType::PairTypeName(VariantType::TYPE_INT32, TYPENAME_INT32, MetaInfo::Instance<int32>()),
@@ -1227,7 +1227,6 @@ bool VariantType::Write(File* fp) const
         }
     }
     break;
-
 
     default:
     {

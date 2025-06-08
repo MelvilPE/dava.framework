@@ -42,7 +42,7 @@ public:
      * @brief Begin building occlusion data
      */
     void Build();
-    
+
     /**
      * @brief Cancel current build process
      */
@@ -53,13 +53,13 @@ public:
      * @return true if build is in progress
      */
     bool IsInBuild() const;
-    
+
     /**
      * @brief Get current build status
      * @return Status code of current build
      */
     uint32 GetBuildStatus() const;
-    
+
     /**
      * @brief Get string description of build status
      * @return Status description

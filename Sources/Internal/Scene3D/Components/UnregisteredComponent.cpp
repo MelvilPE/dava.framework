@@ -32,7 +32,6 @@ UnregisteredComponent::UnregisteredComponent(const KeyedArchive& archive)
 
 UnregisteredComponent::~UnregisteredComponent()
 {
-    
 }
 
 Component* UnregisteredComponent::Clone(Entity* toEntity)

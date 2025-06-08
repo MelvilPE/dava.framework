@@ -52,7 +52,7 @@ public:
         Return scene of this entity or nullptr if this entity is not in scene.
     */
     virtual Scene* GetScene();
-    
+
     /**
      * @brief Adds a component to the entity
      * @param[in] component Pointer to the component to be added
@@ -78,7 +78,7 @@ public:
      * @param[in] index Index of the component if multiple components of same type exist (default: 0)
      */
     void RemoveComponent(const Type* type, uint32 index = 0);
-    
+
     /**
      * @brief Removes a component from the entity at the specified index
      * @param[in] index The index of the component to remove (default: 0)

@@ -59,7 +59,6 @@ void NMaterialStateDynamicTexturesInsp::FindMaterialTexturesRecursive(NMaterial*
         FindMaterialTexturesRecursive(material->GetParent(), ret);
 }
 
-
 void NMaterialStateDynamicTexturesInsp::SetAllPossibleMaterialTextures(NMaterial* material, Set<FastName>& ret) const
 {
     ret.insert(FastName(NMaterialTextureName::TEXTURE_ALBEDO));

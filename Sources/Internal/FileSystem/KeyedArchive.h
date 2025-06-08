@@ -40,17 +40,17 @@ public:
 
     enum eVersion : uint8
     {
-      Legacy = 0x0,
-      StringMap = 0x1,
-      RegisterMap = 0x2,
-      LatestValid = 0x2,
+        Legacy = 0x0,
+        StringMap = 0x1,
+        RegisterMap = 0x2,
+        LatestValid = 0x2,
     };
 
     enum eRegisteredMapTag : uint8
     {
-      TopArchive = 0x0,
-      SubArchive = 0x1,
-      EmptyArchive = 0xFF,
+        TopArchive = 0x0,
+        SubArchive = 0x1,
+        EmptyArchive = 0xFF,
     };
 
     /**

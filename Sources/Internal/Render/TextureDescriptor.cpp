@@ -1031,8 +1031,8 @@ uint32 TextureDescriptor::GetConvertedCRC(eGPUFamily forGPU) const
     {
 #ifdef __DAVAENGINE_WIN_UAP__
         Logger::Warning("[TextureDescriptor::GetConvertedCRC] can't get compressed texture filename for %s; "
-                      "LibPVR is unsupported",
-                      filePath.GetStringValue().c_str());
+                        "LibPVR is unsupported",
+                        filePath.GetStringValue().c_str());
         DVASSERT(false);
         return 0;
 #else

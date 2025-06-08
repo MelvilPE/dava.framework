@@ -409,9 +409,9 @@ void ParticleEffectComponent::DeserializeNestedEmitters(KeyedArchive* archive, S
         variantArch.SetKeyedArchive(nodeArchive);
         nodesVariants.push_back(variantArch);
     }
-    
+
     nodesArchive->SetVariantVector("ParticleEmitterNodes", nodesVariants);
-    
+
     nestedEmittersParticleEmitterNodesYaml = nodesArchive->SaveToYamlString();
 }
 

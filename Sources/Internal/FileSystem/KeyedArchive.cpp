@@ -198,7 +198,7 @@ bool KeyedArchive::Load(File* archive, KeyedArchive* registry)
 
                 keyHashes.push_back(keyHash);
             }
-            
+
             // We want to use keyHash value to get back the key in itself
             ScopedPtr<KeyedArchive> registry(new KeyedArchive());
             for (uint32 item = 0; item < numberOfKeys; ++item)
@@ -235,7 +235,7 @@ bool KeyedArchive::Load(File* archive, KeyedArchive* registry)
                 }
 
                 SetVariant(key.AsString(), std::move(value));
-            } 
+            }
 
             return true;
         }
@@ -280,7 +280,7 @@ bool KeyedArchive::Load(File* archive, KeyedArchive* registry)
             return true;
         }
     }
-    
+
     Logger::Error("[KeyedArchive] error loading keyed archive, archive version is not supported: %d", static_cast<int>(version));
     return false;
 }
@@ -420,7 +420,7 @@ String KeyedArchive::SaveToYamlString() const
 {
     RefPtr<YamlNode> node(YamlNode::CreateMapNode());
     node->Set(VariantType::TYPENAME_KEYED_ARCHIVE, VariantType(const_cast<KeyedArchive*>(this)));
-    
+
     ScopedPtr<DynamicMemoryFile> buffer(DynamicMemoryFile::Create(File::CREATE | File::WRITE));
     if (!YamlEmitter::SaveToYamlFile(node.Get(), buffer))
     {

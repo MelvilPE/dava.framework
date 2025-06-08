@@ -396,7 +396,7 @@ VariantType YamlNode::AsVariantType() const
             // little endian
             for (int i = 0; i + 3 < size; i += 4)
             {
-                std::swap(innerArray[i],     innerArray[i + 3]);
+                std::swap(innerArray[i], innerArray[i + 3]);
                 std::swap(innerArray[i + 1], innerArray[i + 2]);
             }
 
@@ -479,7 +479,7 @@ VariantType YamlNode::AsVariantType() const
         {
             const YamlNode* firstRowNode = it->second->Get(0);
             const YamlNode* secondRowNode = it->second->Get(1);
-            
+
             if (NULL == firstRowNode || NULL == secondRowNode)
             {
                 return retValue;
@@ -519,7 +519,7 @@ VariantType YamlNode::AsVariantType() const
                 {
                     return retValue;
                 }
-            }  
+            }
 
             Vector3 min = firstRowNode->AsVector3();
             Vector3 max = secondRowNode->AsVector3();
@@ -1268,7 +1268,6 @@ bool YamlNode::InitMapFromVariantType(const VariantType& varType)
         arrayElementNodeValue1->InternalAddNodeToMap(max.GetTypeName(), CreateNodeFromVariantType(max), false);
         InternalAddNodeToMap("min", arrayElementNodeValue, false);
         InternalAddNodeToMap("max", arrayElementNodeValue1, false);
-
     }
     break;
     default:

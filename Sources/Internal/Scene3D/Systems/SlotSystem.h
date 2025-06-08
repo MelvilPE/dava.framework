@@ -49,7 +49,7 @@ public:
          * @param configPath Path to config file
          */
         void LoadConfigFile(const FilePath& configPath);
-        
+
         /**
          * @brief Look up an item by name in a config
          * @param configPath Config file path
@@ -57,7 +57,7 @@ public:
          * @return Pointer to found item or nullptr
          */
         const Item* LookUpItem(const FilePath& configPath, FastName itemName);
-        
+
         Vector<Item> GetItems(const FilePath& configPath);
         void InvalidateConfig(const FilePath& configPath);
         bool IsConfigParsed(const FilePath& configPath) const;
@@ -76,7 +76,7 @@ public:
 
     /** 
      * @brief Class that handles loading of external entities
-     */ 
+     */
     class ExternalEntityLoader : public std::enable_shared_from_this<ExternalEntityLoader>
     {
     public:

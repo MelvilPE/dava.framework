@@ -1,37 +1,37 @@
 #include "Scene3D/SceneFileV2.h"
-#include "Scene3D/Entity.h"
-#include "Render/Texture.h"
-#include "Scene3D/PathManip.h"
+#include "Render/3D/MeshUtils.h"
 #include "Render/Highlevel/Camera.h"
 #include "Render/Highlevel/Mesh.h"
-#include "Render/3D/MeshUtils.h"
 #include "Render/Material/NMaterialNames.h"
+#include "Render/Texture.h"
+#include "Scene3D/Entity.h"
+#include "Scene3D/PathManip.h"
 
-#include "Scene3D/Systems/TransformSystem.h"
-#include "Scene3D/Lod/LodComponent.h"
-#include "Scene3D/Components/TransformComponent.h"
-#include "Scene3D/Components/RenderComponent.h"
-#include "Scene3D/Systems/EventSystem.h"
 #include "Scene3D/Components/CameraComponent.h"
-#include "Scene3D/Components/ParticleEffectComponent.h"
 #include "Scene3D/Components/LightComponent.h"
+#include "Scene3D/Components/ParticleEffectComponent.h"
+#include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/SwitchComponent.h"
+#include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Components/UserComponent.h"
+#include "Scene3D/Lod/LodComponent.h"
+#include "Scene3D/Systems/EventSystem.h"
+#include "Scene3D/Systems/TransformSystem.h"
 
-#include "Logger/Logger.h"
-#include "Utils/StringFormat.h"
-#include "FileSystem/FileSystem.h"
 #include "Base/ObjectFactory.h"
 #include "Base/TemplateHelpers.h"
+#include "FileSystem/FileSystem.h"
+#include "Logger/Logger.h"
 #include "Render/Highlevel/Landscape.h"
+#include "Render/Highlevel/RenderObject.h"
 #include "Render/Highlevel/ShadowVolume.h"
 #include "Render/Highlevel/SpriteObject.h"
-#include "Render/Highlevel/RenderObject.h"
+#include "Utils/StringFormat.h"
 
 #include "Render/Material/NMaterial.h"
+#include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Components/CustomPropertiesComponent.h"
 #include "Scene3D/Components/RenderComponent.h"
-#include "Scene3D/Components/ComponentHelpers.h"
 
 #include "Scene3D/Scene.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
@@ -42,9 +42,9 @@
 
 #include "Job/JobManager.h"
 
-#include <functional>
-#include "Engine/EngineContext.h"
 #include "Engine/Engine.h"
+#include "Engine/EngineContext.h"
+#include <functional>
 
 namespace DAVA
 {
@@ -104,7 +104,7 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath& filename, Scene* scen
     header.signature[2] = 'V';
     header.signature[3] = '2';
 
-    header.version = GetEngineContext()->versionInfo->GetCurrentVersion().version;
+    header.version = SCENE_FILE_SAVED_VERSION;
     header.nodeCount = scene->GetChildrenCount();
 
     if (scene->GetGlobalMaterial())
@@ -252,7 +252,8 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath& filename, Scene* scen
 
     // sort in ascending ID order
     Set<DataNode*, std::function<bool(DataNode*, DataNode*)>> orderedNodes(nodes.begin(), nodes.end(),
-                                                                           [](DataNode* a, DataNode* b) { return a->GetNodeID() < b->GetNodeID(); });
+                                                                           [](DataNode* a, DataNode* b)
+                                                                           { return a->GetNodeID() < b->GetNodeID(); });
 
     for (uint32 emitterNodeIndex = 0; emitterNodeIndex < nestedEmitterNodes.size(); emitterNodeIndex++)
     {
@@ -330,12 +331,32 @@ bool SceneFileV2::ReadHeader(SceneFileV2::Header& _header, File* file)
         return false;
     }
 
-    if ((_header.signature[0] != 'S')
-        || (_header.signature[1] != 'F')
-        || (_header.signature[2] != 'V')
-        || (_header.signature[3] != '2'))
+    if ((_header.signature[0] != 'S') || (_header.signature[1] != 'F') || (_header.signature[2] != 'V') || (_header.signature[3] != '2'))
     {
         Logger::Error("SceneFileV2::LoadSceneVersion header is wrong");
+        return false;
+    }
+
+    return true;
+}
+
+bool SceneFileV2::ReadGeometryFileHeader(SceneFileV2::Header& _header, File* file)
+{
+    DVASSERT(file);
+
+    const uint32 result = file->Read(&_header, sizeof(Header));
+    if (result != sizeof(Header))
+    {
+        Logger::Error("SceneFileV2::ReadGeometryFileHeader failed. Read file return %d.", result);
+        return false;
+    }
+
+    if ((_header.signature[0] != 'S') ||
+        (_header.signature[1] != 'C') ||
+        (_header.signature[2] != 'P') ||
+        (_header.signature[3] != 'G'))
+    {
+        Logger::Error("SceneFileV2::ReadGeometryFileHeader header is wrong");
         return false;
     }
 
@@ -412,6 +433,10 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
         return GetError();
     }
 
+    FilePath geometryPath(filename);
+    geometryPath.ReplaceExtension(".scg");
+    ScopedPtr<File> geometryFile(File::Create(geometryPath, File::OPEN | File::READ));
+
     const bool headerValid = ReadHeader(header, file);
 
     if (!headerValid)
@@ -438,17 +463,6 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
         return GetError();
     }
 
-    if (header.version >= 10)
-    {
-        const bool resultRead = ReadDescriptor(file, descriptor);
-        if (!resultRead)
-        {
-            Logger::Error("SceneFileV2::LoadScene ReadDescriptor failed in file: %s", filename.GetAbsolutePathname().c_str());
-            SetError(ERROR_FILE_READ_ERROR);
-            return GetError();
-        }
-    }
-
     VersionInfo::eStatus status = GetEngineContext()->versionInfo->TestVersion(scene->version);
     switch (status)
     {
@@ -469,16 +483,31 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
         break;
     }
 
+    if (header.version > WORLD_OF_TANKS_BLITZ_6_2_VERSION && header.version < WORLD_OF_TANKS_BLITZ_7_8_VERSION)
+    {
+        Logger::Error("SceneFileV2::LoadScene failed in file - framework doesn't support scene versions between %d and %d : %s", WORLD_OF_TANKS_BLITZ_6_2_VERSION, WORLD_OF_TANKS_BLITZ_7_8_VERSION, filename.GetAbsolutePathname().c_str());
+        SetError(ERROR_FILE_READ_ERROR);
+        return GetError();
+    }
+
+    if (header.version >= 10)
+    {
+        const bool resultRead = ReadDescriptor(file, descriptor);
+        if (!resultRead)
+        {
+            Logger::Error("SceneFileV2::LoadScene ReadDescriptor failed in file: %s", filename.GetAbsolutePathname().c_str());
+            SetError(ERROR_FILE_READ_ERROR);
+            return GetError();
+        }
+    }
+
     serializationContext.SetRootNodePath(filename);
     serializationContext.SetScenePath(filename.GetDirectory());
     serializationContext.SetVersion(header.version);
     serializationContext.SetScene(scene);
     serializationContext.SetDefaultMaterialQuality(NMaterialQualityName::DEFAULT_QUALITY_NAME);
 
-    if (isDebugLogEnabled)
-        Logger::FrameworkDebug("+ load data objects");
-
-    if (header.version >= 2)
+    if (header.version <= WORLD_OF_TANKS_BLITZ_6_2_VERSION)
     {
         int32 dataNodeCount = 0;
         uint32 result = file->Read(&dataNodeCount, sizeof(int32));
@@ -539,33 +568,136 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
 
         ApplyFogQuality(globalMaterial);
         scene->SetGlobalMaterial(globalMaterial);
-    }
 
-    if (isDebugLogEnabled)
-    {
-        Logger::FrameworkDebug("+ load hierarchy");
-    }
-
-    scene->children.reserve(header.nodeCount);
-    for (int ci = 0; ci < header.nodeCount; ++ci)
-    {
-        const bool loaded = LoadHierarchy(0, scene, file, 1);
-        if (!loaded)
+        scene->children.reserve(header.nodeCount);
+        for (int ci = 0; ci < header.nodeCount; ++ci)
         {
-            Logger::Error("SceneFileV2::LoadScene LoadHierarchy failed in file: %s", filename.GetAbsolutePathname().c_str());
+            const bool loaded = LoadHierarchy(0, scene, file, 1);
+            if (!loaded)
+            {
+                Logger::Error("SceneFileV2::LoadScene LoadHierarchy failed in file: %s", filename.GetAbsolutePathname().c_str());
+                SetError(ERROR_FILE_READ_ERROR);
+                return GetError();
+            }
+        }
+    }
+
+    if (header.version >= WORLD_OF_TANKS_BLITZ_7_8_VERSION)
+    {
+        ScopedPtr<KeyedArchive> sceneArchive(new KeyedArchive());
+        if (!sceneArchive->Load(file))
+        {
+            Logger::Error("SceneFileV2::LoadScene failed to load scene archive in file: %s", filename.GetAbsolutePathname().c_str());
             SetError(ERROR_FILE_READ_ERROR);
             return GetError();
+        }
+
+        const Vector<String> requiredKeys = {
+            SceneFileV2Key::DATANODES_KEY,
+            SceneFileV2Key::HIERARCHY_KEY
+        };
+        for (const auto& key : requiredKeys)
+        {
+            if (!sceneArchive->IsKeyExists(key))
+            {
+                Logger::Error("SceneFileV2::LoadScene failed to load scene archive %s key in file: %s", key.c_str(), filename.GetAbsolutePathname().c_str());
+                SetError(ERROR_FILE_READ_ERROR);
+                return GetError();
+            }
+        }
+
+        Vector<VariantType> dataNodes = sceneArchive->GetVariantVector(SceneFileV2Key::DATANODES_KEY);
+        uint32 dataNodeCount = static_cast<uint32>(dataNodes.size());
+        for (uint32 dataNodeIndex = 0; dataNodeIndex < dataNodeCount; ++dataNodeIndex)
+        {
+            KeyedArchive* nodeArchive = dataNodes[dataNodeIndex].AsKeyedArchive();
+            if (!LoadDataNodeFromArchive(scene, nodeArchive))
+            {
+                Logger::Error("SceneFileV2::LoadScene LoadDataNodeFromArchive failed at index %d in file: %s", dataNodeIndex, filename.GetAbsolutePathname().c_str());
+                SetError(ERROR_FILE_READ_ERROR);
+                return GetError();
+            }
+        }
+
+        if (descriptor.geometryIdHash != NULL)
+        {
+            if (!geometryFile)
+            {
+                Logger::Error("SceneFileV2::LoadScene failed to open geometry file: %s", geometryPath.GetAbsolutePathname().c_str());
+                SetError(ERROR_FAILED_TO_CREATE_FILE);
+                return GetError();
+            }
+
+            Header geometryHeader;
+            if (!ReadGeometryFileHeader(geometryHeader, geometryFile))
+            {
+                Logger::Error("SceneFileV2::LoadScene failed to read geometry header in file: %s", geometryPath.GetAbsolutePathname().c_str());
+                SetError(ERROR_FILE_READ_ERROR);
+                return GetError();
+            }
+
+            int32 geometryNodeCount = 0;
+            if (sizeof(geometryNodeCount) != geometryFile->Read(&geometryNodeCount, sizeof(geometryNodeCount)))
+            {
+                Logger::Error("SceneFileV2::LoadScene read geometryNodeCount failed in file: %s", geometryPath.GetAbsolutePathname().c_str());
+                SetError(ERROR_FILE_READ_ERROR);
+                return GetError();
+            }
+
+            if (geometryHeader.nodeCount != geometryNodeCount)
+            {
+                Logger::Warning("SceneFileV2::LoadScene geometryNodeCount mismatch in file: %s", geometryPath.GetAbsolutePathname().c_str());
+            }
+
+            for (int32 geometryNodeIndex = 0; geometryNodeIndex < geometryNodeCount; ++geometryNodeIndex)
+            {
+                const bool nodeLoaded = LoadDataNode(scene, nullptr, geometryFile);
+                if (!nodeLoaded)
+                {
+                    Logger::Error("SceneFileV2::LoadScene LoadDataNode for geometry failed in file: %s", filename.GetAbsolutePathname().c_str());
+                    SetError(ERROR_FILE_READ_ERROR);
+                    return GetError();
+                }
+            }
+        }
+
+        NMaterial* globalMaterial = nullptr;
+        serializationContext.ResolveMaterialBindings();
+        ApplyFogQuality(globalMaterial);
+        scene->SetGlobalMaterial(globalMaterial);
+
+        Vector<VariantType> hierarchy = sceneArchive->GetVariantVector(SceneFileV2Key::HIERARCHY_KEY);
+        uint32 hierarchyCount = static_cast<uint32>(hierarchy.size());
+        scene->children.reserve(hierarchyCount);
+        for (uint32 nodeIndex = 0; nodeIndex < hierarchyCount; ++nodeIndex)
+        {
+            KeyedArchive* nodeArchive = hierarchy[nodeIndex].AsKeyedArchive();
+            if (!LoadHierarchyFromArchive(0, scene, nodeArchive))
+            {
+                Logger::Error("SceneFileV2::LoadScene LoadHierarchyFromArchive failed in file: %s", filename.GetAbsolutePathname().c_str());
+                SetError(ERROR_FILE_READ_ERROR);
+                return GetError();
+            }
         }
     }
 
     UpdatePolygonGroupRequestedFormatRecursively(scene);
-    const bool contextLoaded = serializationContext.LoadPolygonGroupData(file);
+    bool contextLoaded = false;
+    if (descriptor.geometryIdHash != NULL && geometryFile)
+    {
+        contextLoaded = serializationContext.LoadPolygonGroupData(geometryFile);
+    }
+    else
+    {
+        contextLoaded = serializationContext.LoadPolygonGroupData(file);
+    }
     if (!contextLoaded)
     {
         Logger::Error("SceneFileV2::LoadScene LoadPolygonGroupData failed in file: %s", filename.GetAbsolutePathname().c_str());
         SetError(ERROR_FILE_READ_ERROR);
         return GetError();
     }
+
     OptimizeScene(scene);
 
     if (serializationContext.GetVersion() < LODSYSTEM2)
@@ -758,28 +890,43 @@ bool SceneFileV2::WriteDescriptor(File* file, const Descriptor& descriptor)
 
 bool SceneFileV2::ReadDescriptor(File* file, /*out*/ Descriptor& descriptor)
 {
-    uint32 result = file->Read(&descriptor.size, sizeof(descriptor.size));
+    uint32 result = 0;
+    result = file->Read(&descriptor.size, sizeof(descriptor.size));
     if (result != sizeof(descriptor.size))
     {
         return false;
     }
-    DVASSERT(descriptor.size >= sizeof(descriptor.fileType));
 
     result = file->Read(&descriptor.fileType, sizeof(descriptor.fileType));
-    if (result != sizeof(descriptor.size))
+    if (result != sizeof(descriptor.fileType))
     {
         return false;
     }
 
-    if (descriptor.size > sizeof(descriptor.fileType))
+    if (descriptor.size > sizeof(descriptor.size) + sizeof(descriptor.fileType))
     {
-        //skip extra data probably added by future versions
-        const bool seekResult = file->Seek(descriptor.size - sizeof(descriptor.fileType), File::SEEK_FROM_CURRENT);
-        if (!seekResult)
+        result = file->Read(&descriptor.geometryIdHash, sizeof(descriptor.geometryIdHash));
+        if (result != sizeof(descriptor.geometryIdHash))
         {
             return false;
         }
     }
+
+    if (descriptor.size > sizeof(descriptor.size) + sizeof(descriptor.fileType) + sizeof(descriptor.geometryIdHash))
+    {
+        result = file->Read(&descriptor.geometryDataHash, sizeof(descriptor.geometryDataHash));
+        if (result != sizeof(descriptor.geometryDataHash))
+        {
+            return false;
+        }
+    }
+
+    if (descriptor.size > sizeof(descriptor.size) + sizeof(descriptor.fileType) + sizeof(descriptor.geometryIdHash) + sizeof(descriptor.geometryDataHash))
+    {
+        Logger::Warning("SceneFileV2::ReadDescriptor: file descriptor size is larger than expected!");
+        return false;
+    }
+
     return true;
 }
 
@@ -808,39 +955,142 @@ bool SceneFileV2::LoadDataNode(Scene* scene, DataNode* parent, File* file)
     String name = archive->GetString("##name");
     DataNode* node = dynamic_cast<DataNode*>(ObjectFactory::Instance()->New<BaseObject>(name));
 
-    if (node)
+    if (!node)
     {
-        if (node->GetClassName() == "DataNode")
-        {
-            SafeRelease(node);
-            return false;
-        }
-        node->SetScene(scene);
+        return false;
+    }
 
-        if (isDebugLogEnabled)
-        {
-            String arcName = archive->GetString("name");
-            Logger::FrameworkDebug("- %s(%s)", arcName.c_str(), node->GetClassName().c_str());
-        }
-        node->Load(archive, &serializationContext);
-        AddToNodeMap(node);
+    if (node->GetClassName() == "DataNode")
+    {
+        SafeRelease(node);
+        return false;
+    }
+    node->SetScene(scene);
+    node->Load(archive, &serializationContext);
+    AddToNodeMap(node);
 
-        if (name == "PolygonGroup")
+    if (name == "PolygonGroup")
+    {
+        serializationContext.AddLoadedPolygonGroup(static_cast<PolygonGroup*>(node), currFilePos);
+    }
+
+    if (name == "ParticleEmitterNode")
+    {
+        serializationContext.AddSavedEmitterNode(static_cast<ParticleEmitterNode*>(node));
+    }
+
+    SafeRelease(node);
+    return loaded;
+}
+
+bool SceneFileV2::LoadDataNodeFromArchive(Scene* scene, KeyedArchive* archive)
+{
+    String name = archive->GetString("##name");
+    DataNode* node = dynamic_cast<DataNode*>(ObjectFactory::Instance()->New<BaseObject>(name));
+    if (!node)
+    {
+        return false;
+    }
+
+    if (node->GetClassName() == "DataNode")
+    {
+        SafeRelease(node);
+        return false;
+    }
+
+    node->SetScene(scene);
+    node->Load(archive, &serializationContext);
+    AddToNodeMap(node);
+
+    if (name == "PolygonGroup")
+    {
+        // serializationContext.AddLoadedPolygonGroup(static_cast<PolygonGroup*>(node), currFilePos);
+    }
+
+    if (name == "ParticleEmitterNode")
+    {
+        serializationContext.AddSavedEmitterNode(static_cast<ParticleEmitterNode*>(node));
+    }
+
+    SafeRelease(node);
+    return true;
+}
+
+bool SceneFileV2::LoadHierarchyFromArchive(Scene* scene, Entity* parent, KeyedArchive* archive)
+{
+    bool resultLoad = true;
+    bool keepUnusedQualityEntities = QualitySettingsSystem::Instance()->GetKeepUnusedEntities();
+
+    String name = archive->GetString("##name");
+    bool removeChildren = false;
+    bool skipNode = false;
+
+    Entity* node = nullptr;
+    if (name == "LandscapeNode")
+    {
+        node = LoadLandscape(scene, archive);
+    }
+    else if (name == "Camera")
+    {
+        node = LoadCamera(scene, archive);
+    }
+    else if (name == "LightNode")
+    {
+        node = LoadLight(scene, archive);
+        removeChildren = true;
+    }
+    else if (name == "SceneNode")
+    {
+        node = LoadEntity(scene, archive);
+    }
+    else
+    {
+        BaseObject* obj = ObjectFactory::Instance()->New<BaseObject>(name);
+        node = dynamic_cast<Entity*>(obj);
+        if (node)
         {
-            serializationContext.AddLoadedPolygonGroup(static_cast<PolygonGroup*>(node), currFilePos);
+            node->SetScene(scene);
+            node->Load(archive, &serializationContext);
+        }
+        else
+        {
+            SafeRelease(obj);
+            node = new Entity();
+            skipNode = true;
+        }
+    }
+
+    if (node != nullptr)
+    {
+        if (!skipNode && (keepUnusedQualityEntities || QualitySettingsSystem::Instance()->IsQualityVisible(node)))
+        {
+            parent->AddNode(node);
         }
 
-        if (name == "ParticleEmitterNode")
+        Vector<VariantType> children = archive->GetVariantVector(SceneFileV2Key::HIERARCHY_KEY);
+        uint32 childrenCount = static_cast<uint32>(children.size());
+        node->children.reserve(childrenCount);
+        for (uint32 childIndex = 0; childIndex < childrenCount; ++childIndex)
         {
-            serializationContext.AddSavedEmitterNode(static_cast<ParticleEmitterNode*>(node));
+            KeyedArchive* childArchive = children[childIndex].AsKeyedArchive();
+            resultLoad &= LoadHierarchyFromArchive(scene, node, childArchive);
         }
 
-        int32 childrenCount = archive->GetInt32("#childrenCount", 0);
-        DVASSERT(0 == childrenCount && "We don't support hierarchical dataNodes load.");
+        if (removeChildren && childrenCount > 0)
+        {
+            node->RemoveAllChildren();
+        }
+
+        ParticleEffectComponent* effect = node->GetComponent<ParticleEffectComponent>();
+        if (effect && effect->loadedVersion == 0)
+        {
+            effect->CollapseOldEffect(&serializationContext);
+        }
 
         SafeRelease(node);
     }
-    return loaded;
+
+    return resultLoad;
 }
 
 bool SceneFileV2::SaveDataHierarchy(DataNode* node, File* /*file*/, int32 /*level*/)
@@ -932,7 +1182,7 @@ bool SceneFileV2::GetNestedParticleEmitterNodes(Entity* entity, Vector<VariantTy
         {
             continue;
         }
-            
+
         String nestedEmittersParticleEmitterNodesYaml = effect->GetNestedEmittersParticleEmitterNodesYaml();
         if (nestedEmittersParticleEmitterNodesYaml.empty())
         {
@@ -1002,7 +1252,7 @@ bool SceneFileV2::LoadHierarchy(Scene* scene, Entity* parent, File* file, int32 
             node->SetScene(scene);
             node->Load(archive, &serializationContext);
         }
-        else //in case if editor class is loading in non-editor sprsoject
+        else // in case if editor class is loading in non-editor sprsoject
         {
             SafeRelease(obj);
             node = new Entity();
@@ -1174,15 +1424,15 @@ bool SceneFileV2::RemoveEmptyHierarchy(Entity* currentNode)
                 FastName currentName = currentNode->GetName();
                 KeyedArchive* currentProperties = GetCustomPropertiesArchieve(currentNode);
 
-                //Logger::FrameworkDebug("remove node: %s %p", currentNode->GetName().c_str(), currentNode);
+                // Logger::FrameworkDebug("remove node: %s %p", currentNode->GetName().c_str(), currentNode);
                 parent->InsertBeforeNode(childNode, currentNode);
 
-                //MEGA kostyl
-                if (!childNode->GetComponent<ParticleEffectComponent>()) //do not rename effects
+                // MEGA kostyl
+                if (!childNode->GetComponent<ParticleEffectComponent>()) // do not rename effects
                 {
                     childNode->SetName(currentName);
                 }
-                //merge custom properties
+                // merge custom properties
 
                 if (currentProperties)
                 {
@@ -1195,7 +1445,7 @@ bool SceneFileV2::RemoveEmptyHierarchy(Entity* currentNode)
                     }
                 }
 
-                //VI: remove node after copying its properties since properties become invalid after node removal
+                // VI: remove node after copying its properties since properties become invalid after node removal
                 parent->RemoveNode(currentNode);
 
                 removedNodeCount++;
@@ -1203,7 +1453,7 @@ bool SceneFileV2::RemoveEmptyHierarchy(Entity* currentNode)
 
                 return true;
             }
-            //RemoveEmptyHierarchy(childNode);
+            // RemoveEmptyHierarchy(childNode);
         }
     }
     return false;
@@ -1251,15 +1501,14 @@ void SceneFileV2::RemoveDeprecatedMaterialFlags(Entity* node)
 void SceneFileV2::ConvertAlphatestValueMaterials(Entity* node)
 {
     static const float32 alphatestThresholdValue = .3f;
-    static const Array<FastName, 7> alphatestValueMaterials =
-    {
-      FastName("~res:/Materials/NormalizedBlinnPhongPerPixel.Alphatest.material"),
-      FastName("~res:/Materials/NormalizedBlinnPhongPerPixel.Alphatest.Alphablend.material"),
-      FastName("~res:/Materials/NormalizedBlinnPhongPerPixelFast.Alphatest.material"),
-      FastName("~res:/Materials/NormalizedBlinnPhongPerVertex.Alphatest.material"),
-      FastName("~res:/Materials/NormalizedBlinnPhongPerVertex.Alphatest.Alphablend.material"),
-      FastName("~res:/Materials/NormalizedBlinnPhongAllQualities.Alphatest.material"),
-      FastName("~res:/Materials/NormalizedBlinnPhongAllQualities.Alphatest.Alphablend.material"),
+    static const Array<FastName, 7> alphatestValueMaterials = {
+        FastName("~res:/Materials/NormalizedBlinnPhongPerPixel.Alphatest.material"),
+        FastName("~res:/Materials/NormalizedBlinnPhongPerPixel.Alphatest.Alphablend.material"),
+        FastName("~res:/Materials/NormalizedBlinnPhongPerPixelFast.Alphatest.material"),
+        FastName("~res:/Materials/NormalizedBlinnPhongPerVertex.Alphatest.material"),
+        FastName("~res:/Materials/NormalizedBlinnPhongPerVertex.Alphatest.Alphablend.material"),
+        FastName("~res:/Materials/NormalizedBlinnPhongAllQualities.Alphatest.material"),
+        FastName("~res:/Materials/NormalizedBlinnPhongAllQualities.Alphatest.Alphablend.material"),
     };
 
     RenderObject* ro = GetRenderObject(node);
@@ -1482,4 +1731,7 @@ SceneArchive::SceneArchiveHierarchyNode::~SceneArchiveHierarchyNode()
         SafeRelease(child);
     }
 }
-};
+
+const String SceneFileV2Key::DATANODES_KEY = "#dataNodes";
+const String SceneFileV2Key::HIERARCHY_KEY = "#hierarchy";
+}; // namespace DAVA
