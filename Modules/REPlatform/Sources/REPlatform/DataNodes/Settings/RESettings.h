@@ -31,6 +31,12 @@ public:
     bool showErrorDialog = true;
     uint32 recentScenesCount = 15;
 
+    // Grid & scene settings
+    Color gridColorX = Color(1.0f, 0.0f, 0.0f, 1.0f);
+    Color gridColorY = Color(0.0f, 1.0f, 0.0f, 1.0f);
+    Color gridOtherColors = Color(1.0f, 1.0f, 1.0f, 1.0f);
+    Color sceneBackgroundColor = Color(0.0f, 0.0f, 0.0f, 1.0f);
+
     // Material Editor settings
     Color materialEditorSwitchColor0 = Color(0.0f, 1.0f, 0.0f, 1.0f);
     Color materialEditorSwitchColor1 = Color(1.0f, 0.0f, 0.0f, 1.0f);

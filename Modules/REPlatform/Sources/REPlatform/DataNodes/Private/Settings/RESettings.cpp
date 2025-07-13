@@ -1,14 +1,14 @@
 #include "REPlatform/DataNodes/Settings/RESettings.h"
 
-#include <Reflection/ReflectionRegistrator.h>
-#include <Reflection/ReflectedMeta.h>
 #include <Base/GlobalEnum.h>
+#include <Reflection/ReflectedMeta.h>
+#include <Reflection/ReflectionRegistrator.h>
 
 ENUM_DECLARE(DAVA::RenderingBackend)
 {
 #if defined(__DAVAENGINE_WIN32__)
     // Uncomment this line to allow DX11 backend
-    //ENUM_ADD_DESCR(static_cast<int>(DAVA::RenderingBackend::DX11), "DirectX 11");
+    // ENUM_ADD_DESCR(static_cast<int>(DAVA::RenderingBackend::DX11), "DirectX 11");
     ENUM_ADD_DESCR(static_cast<int>(DAVA::RenderingBackend::DX9), "DirectX 9");
 #endif
     ENUM_ADD_DESCR(static_cast<int>(DAVA::RenderingBackend::OpenGL), "OpenGL");
@@ -25,6 +25,10 @@ DAVA_VIRTUAL_REFLECTION_IMPL(GeneralSettings)
     .Field("CompressionQuality", &GeneralSettings::compressionQuality)[M::DisplayName("Compression quality"), M::EnumT<TextureConverter::eConvertQuality>()]
     .Field("ShowErrorDialog", &GeneralSettings::showErrorDialog)[M::DisplayName("Show error dialog")]
     .Field("recentScenesCount", &GeneralSettings::recentScenesCount)[M::DisplayName("Number of recent scenes"), M::Range(0, 50, 1)]
+    .Field("gridColorX", &GeneralSettings::gridColorX)[M::DisplayName("Grid X color"), M::Group("Scene")]
+    .Field("gridColorY", &GeneralSettings::gridColorY)[M::DisplayName("Grid Y color"), M::Group("Scene")]
+    .Field("gridOtherColors", &GeneralSettings::gridOtherColors)[M::DisplayName("Grid other colors"), M::Group("Scene")]
+    .Field("sceneBackgroundColor", &GeneralSettings::sceneBackgroundColor)[M::DisplayName("Scene background color"), M::Group("Scene")]
     .Field("materialEditorSwitchColor0", &GeneralSettings::materialEditorSwitchColor0)[M::DisplayName("Switch 0 color"), M::Group("Material Editor")]
     .Field("materialEditorSwitchColor1", &GeneralSettings::materialEditorSwitchColor1)[M::DisplayName("Switch 1 color"), M::Group("Material Editor")]
     .Field("materialEditorLod0Color", &GeneralSettings::materialEditorLodColor0)[M::DisplayName("Lod 0 color"), M::Group("Material Editor")]

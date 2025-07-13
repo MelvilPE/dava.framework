@@ -21,6 +21,7 @@ SceneGridSystem::SceneGridSystem(Scene* scene)
 void SceneGridSystem::Draw()
 {
     GlobalSceneSettings* settings = Deprecated::GetDataNode<GlobalSceneSettings>();
+    DAVA::GeneralSettings* generalSettings = DAVA::Deprecated::GetDataNode<DAVA::GeneralSettings>();
 
     const float32 gridStep = settings->gridStep;
     const float32 gridMax = settings->gridSize;
@@ -37,17 +38,18 @@ void SceneGridSystem::Draw()
 
             if (x != 0.0f)
             {
-                static const Color gridColor(0.4f, 0.4f, 0.4f, 1.0f);
+                static const Color gridColor(generalSettings->gridOtherColors);
 
                 GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawLine(v1, v2, gridColor);
                 GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawLine(v3, v4, gridColor);
             }
         }
 
-        static const Color grid0Color(1.0f, 1.0f, 1.0f, 1.0f);
+        static const Color gridColorX(generalSettings->gridColorX);
+        static const Color gridColorY(generalSettings->gridColorY);
 
-        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawLine(Vector3(-gridMax, 0, 0), Vector3(gridMax, 0, 0), grid0Color);
-        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawLine(Vector3(0, -gridMax, 0), Vector3(0, gridMax, 0), grid0Color);
+        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawLine(Vector3(-gridMax, 0, 0), Vector3(gridMax, 0, 0), gridColorY);
+        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawLine(Vector3(0, -gridMax, 0), Vector3(0, gridMax, 0), gridColorX);
     }
 }
 } // namespace DAVA

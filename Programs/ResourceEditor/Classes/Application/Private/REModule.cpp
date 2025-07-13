@@ -10,13 +10,13 @@
 #include <REPlatform/Global/GlobalOperations.h>
 #include <REPlatform/Scene/Systems/EditorStatisticsSystem.h>
 
-#include <TArc/WindowSubSystem/Private/UIManager.h>
 #include <TArc/DataProcessing/TArcDataNode.h>
+#include <TArc/WindowSubSystem/Private/UIManager.h>
 
 #include <Engine/EngineContext.h>
 #include <FileSystem/LocalizationSystem.h>
-#include <UI/UIControlSystem.h>
 #include <UI/Render/UIRenderSystem.h>
+#include <UI/UIControlSystem.h>
 
 #include <QPointer>
 
@@ -46,11 +46,10 @@ public:
     TextureCache* textureCache = nullptr;
     QPointer<QtMainWindow> mainWindow;
 
-    DAVA_VIRTUAL_REFLECTION_IN_PLACE(REGlobalData)
-    {
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(REGlobalData) {
     };
 };
-}
+} // namespace REModuleDetail
 
 REModule::REModule()
 {
@@ -71,7 +70,7 @@ void REModule::PostInit()
     const DAVA::EngineContext* engineContext = accessor->GetEngineContext();
     engineContext->localizationSystem->InitWithDirectory("~res:/Strings/");
     engineContext->localizationSystem->SetCurrentLocale("en");
-    engineContext->uiControlSystem->GetRenderSystem()->SetClearColor(DAVA::Color(.0f, .0f, .0f, 1.f));
+    engineContext->uiControlSystem->GetRenderSystem()->SetClearColor(DAVA::Color(accessor->GetGlobalContext()->GetData<DAVA::GeneralSettings>()->sceneBackgroundColor));
 
     using TData = REModuleDetail::REGlobalData;
     DAVA::DataContext* globalContext = accessor->GetGlobalContext();

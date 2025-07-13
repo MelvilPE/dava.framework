@@ -1,19 +1,19 @@
 #include "Classes/Application/Private/SettingsConverter.h"
 
-#include <REPlatform/DataNodes/Settings/RESettings.h>
 #include <REPlatform/DataNodes/Settings/GlobalSceneSettings.h>
+#include <REPlatform/DataNodes/Settings/RESettings.h>
 
-#include <TArc/DataProcessing/PropertiesHolder.h>
-#include <TArc/DataProcessing/DataContext.h>
-#include <TArc/Core/ContextAccessor.h>
 #include <TArc/Controls/ColorPicker/ColorPickerSettings.h>
+#include <TArc/Core/ContextAccessor.h>
+#include <TArc/DataProcessing/DataContext.h>
+#include <TArc/DataProcessing/PropertiesHolder.h>
 #include <TArc/SharedModules/ThemesModule/ThemesModule.h>
 
+#include <Base/BaseTypes.h>
 #include <Engine/PlatformApiQt.h>
 #include <FileSystem/KeyedArchive.h>
-#include <Render/RenderBase.h>
 #include <Render/GPUFamilyDescriptor.h>
-#include <Base/BaseTypes.h>
+#include <Render/RenderBase.h>
 
 namespace SettingsConverterDetail
 {
@@ -89,11 +89,16 @@ public:
         DAVA::ThemesSettings* themeSettings = ctx->GetData<DAVA::ThemesSettings>();
         DVASSERT(themeSettings);
 
-#define LOAD_SETTING(settingsVar, field, key, convertFn)\
-        settingsVar->field = GetValue(key, settingsVar->field).convertFn()
+#define LOAD_SETTING(settingsVar, field, key, convertFn) \
+    settingsVar->field = GetValue(key, settingsVar->field).convertFn()
 
         LOAD_SETTING(generalSettings, reloadParticlesOnProjectOpening, General_ReloadParticlesOnPojectOpening, AsBool);
         LOAD_SETTING(generalSettings, previewEnabled, General_PreviewEnabled, AsBool);
+
+        LOAD_SETTING(generalSettings, gridColorX, Scene_GridColorX, AsColor);
+        LOAD_SETTING(generalSettings, gridColorY, Scene_GridColorY, AsColor);
+        LOAD_SETTING(generalSettings, gridOtherColors, Scene_GridOtherColors, AsColor);
+        LOAD_SETTING(generalSettings, sceneBackgroundColor, Scene_SceneBackgroundColor, AsColor);
 
         generalSettings->compressionQuality = GetEnumValue(General_CompressionQuality, generalSettings->compressionQuality);
         LOAD_SETTING(generalSettings, showErrorDialog, General_ShowErrorDialog, AsBool);
@@ -285,6 +290,10 @@ private:
     const DAVA::String General_Mouse_InvertWheel = "General/Mouse/InvertWheel";
     const DAVA::String General_Mouse_WheelMoveCamera = "General/Mouse/WheelMoveCamera";
     const DAVA::String General_Mouse_WheelMoveIntensity = "General/Mouse/WheelMoveIntensity";
+    const DAVA::String Scene_GridColorX = "Scene/GridColorX";
+    const DAVA::String Scene_GridColorY = "Scene/GridColorY";
+    const DAVA::String Scene_GridOtherColors = "Scene/GridOtherColors";
+    const DAVA::String Scene_SceneBackgroundColor = "Scene/SceneBackgroundColor";
     const DAVA::String Scene_GridStep = "Scene/GridStep";
     const DAVA::String Scene_GridSize = "Scene/GridSize";
     const DAVA::String Scene_CameraSpeed0 = "Scene/CameraSpeed0";
