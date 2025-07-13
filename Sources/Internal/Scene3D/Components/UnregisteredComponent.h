@@ -19,6 +19,9 @@ public:
     void Serialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
     void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
+    void SetUnregisteredComponentYaml(String data);
+    String GetUnregisteredComponentYaml();
+
     DAVA_VIRTUAL_REFLECTION(UnregisteredComponent, Component);
 
 private:
@@ -27,4 +30,4 @@ private:
 private:
     String unregisteredComponent;
 };
-};
+}; // namespace DAVA

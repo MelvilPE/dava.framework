@@ -5,8 +5,8 @@
 #include "Scene3D/Systems/EventSystem.h"
 #include "Scene3D/Systems/GlobalEventSystem.h"
 
-#include "Reflection/ReflectionRegistrator.h"
 #include "Reflection/ReflectedMeta.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 #include "FileSystem/FileSystem.h"
 
@@ -36,7 +36,9 @@ UnregisteredComponent::~UnregisteredComponent()
 
 Component* UnregisteredComponent::Clone(Entity* toEntity)
 {
-    return nullptr;
+    UnregisteredComponent* newUnregisteredComponent = new UnregisteredComponent();
+    newUnregisteredComponent->SetUnregisteredComponentYaml(unregisteredComponent);
+    return newUnregisteredComponent;
 }
 
 void UnregisteredComponent::Serialize(KeyedArchive* archive, SerializationContext* serializationContext)
@@ -48,4 +50,14 @@ void UnregisteredComponent::Deserialize(KeyedArchive* archive, SerializationCont
 {
     unregisteredComponent = archive->SaveToYamlString();
 }
-};
+
+void UnregisteredComponent::SetUnregisteredComponentYaml(String data)
+{
+    unregisteredComponent = data;
+}
+
+String UnregisteredComponent::GetUnregisteredComponentYaml()
+{
+    return unregisteredComponent;
+}
+}; // namespace DAVA
