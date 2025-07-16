@@ -1,12 +1,12 @@
 #include "YamlNode.h"
+#include "Base/Type.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/KeyedArchive.h"
-#include "Utils/Utils.h"
-#include "Utils/UTF8Utils.h"
-#include "Utils/StringFormat.h"
-#include <Base/RefPtrUtils.h>
-#include "Base/Type.h"
 #include "Reflection/ReflectedTypeDB.h"
+#include "Utils/StringFormat.h"
+#include "Utils/UTF8Utils.h"
+#include "Utils/Utils.h"
+#include <Base/RefPtrUtils.h>
 
 namespace DAVA
 {
@@ -94,7 +94,7 @@ uint32 YamlNode::GetCount() const
     default:
         break;
     }
-    return 0; //string nodes does not contain content
+    return 0; // string nodes does not contain content
 }
 
 int32 YamlNode::AsInt() const
@@ -365,41 +365,20 @@ VariantType YamlNode::AsVariantType() const
         }
         else if (innerTypeName == DAVA::VariantType::TYPENAME_BYTE_ARRAY)
         {
-            const auto& byteArrayNodes = it->second->AsVector();
-            int32 size = static_cast<int32>(byteArrayNodes.size());
+            const auto& byteArrayNoodes = it->second->AsVector();
+            int32 size = static_cast<int32>(byteArrayNoodes.size());
             uint8* innerArray = new uint8[size];
-
             for (int32 i = 0; i < size; ++i)
             {
-                const std::string& strValue = byteArrayNodes[i]->AsString();
                 int32 val = 0;
-                int retCode = 0;
-
-                if (strValue.find("0x") == 0 || strValue.find_first_of("ABCDEFabcdef") != std::string::npos)
-                {
-                    retCode = sscanf(strValue.c_str(), "%x", &val);
-                }
-                else
-                {
-                    retCode = sscanf(strValue.c_str(), "%d", &val);
-                }
-
-                if ((retCode != 1) || (val < 0) || (val > UCHAR_MAX))
+                int32 retCode = sscanf(byteArrayNoodes[i]->AsString().c_str(), "%x", &val);
+                if ((val < 0) || (val > UCHAR_MAX) || (retCode == 0))
                 {
                     delete[] innerArray;
                     return retValue;
                 }
-
                 innerArray[i] = static_cast<uint8>(val);
             }
-
-            // little endian
-            for (int i = 0; i + 3 < size; i += 4)
-            {
-                std::swap(innerArray[i], innerArray[i + 3]);
-                std::swap(innerArray[i + 1], innerArray[i + 2]);
-            }
-
             retValue.SetByteArray(innerArray, size);
             delete[] innerArray;
         }
@@ -844,7 +823,7 @@ const String& YamlNode::GetItemKeyName(uint32 index) const
 
 const YamlNode* YamlNode::Get(const String& name) const
 {
-    //DVASSERT(GetType() == TYPE_MAP);
+    // DVASSERT(GetType() == TYPE_MAP);
     if (GetType() == TYPE_MAP)
     {
         auto iter = objectMap->ordered.find(name);
@@ -1028,7 +1007,7 @@ void YamlNode::InternalSetByteArray(const uint8* byteArray, int32 byteArraySize)
 
 void YamlNode::InternalSetKeyedArchive(KeyedArchive* archive)
 {
-    //creation array with variables
+    // creation array with variables
     const KeyedArchive::UnderlyingMap& innerArchiveMap = archive->GetArchieveData();
     for (auto it = innerArchiveMap.begin(); it != innerArchiveMap.end(); ++it)
     {
@@ -1354,4 +1333,4 @@ DAVA::YamlNode::eType YamlNode::VariantTypeToYamlNodeType(VariantType::eVariantT
     DVASSERT(false);
     return TYPE_MAP;
 }
-}
+} // namespace DAVA
