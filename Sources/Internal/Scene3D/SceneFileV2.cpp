@@ -967,7 +967,6 @@ bool SceneFileV2::LoadDataNode(Scene* scene, DataNode* parent, File* file)
     }
     node->SetScene(scene);
     node->Load(archive, &serializationContext);
-    AddToNodeMap(node);
 
     if (name == "PolygonGroup")
     {
@@ -977,8 +976,10 @@ bool SceneFileV2::LoadDataNode(Scene* scene, DataNode* parent, File* file)
     if (name == "ParticleEmitterNode")
     {
         serializationContext.AddSavedEmitterNode(static_cast<ParticleEmitterNode*>(node));
+        return true;
     }
 
+    AddToNodeMap(node);
     SafeRelease(node);
     return loaded;
 }
@@ -1000,7 +1001,6 @@ bool SceneFileV2::LoadDataNodeFromArchive(Scene* scene, KeyedArchive* archive)
 
     node->SetScene(scene);
     node->Load(archive, &serializationContext);
-    AddToNodeMap(node);
 
     if (name == "PolygonGroup")
     {
@@ -1010,8 +1010,10 @@ bool SceneFileV2::LoadDataNodeFromArchive(Scene* scene, KeyedArchive* archive)
     if (name == "ParticleEmitterNode")
     {
         serializationContext.AddSavedEmitterNode(static_cast<ParticleEmitterNode*>(node));
+        return true;
     }
 
+    AddToNodeMap(node);
     SafeRelease(node);
     return true;
 }
