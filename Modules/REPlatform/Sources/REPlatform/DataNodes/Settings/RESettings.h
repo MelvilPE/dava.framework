@@ -32,8 +32,8 @@ public:
     uint32 recentScenesCount = 15;
 
     // Grid & scene settings
-    Color gridColorX = Color(1.0f, 0.0f, 0.0f, 1.0f);
-    Color gridColorY = Color(0.0f, 1.0f, 0.0f, 1.0f);
+    Color gridColorX = Color(0.0f, 1.0f, 0.0f, 1.0f);
+    Color gridColorY = Color(1.0f, 0.0f, 0.0f, 1.0f);
     Color gridOtherColors = Color(1.0f, 1.0f, 1.0f, 1.0f);
     Color sceneBackgroundColor = Color(0.0f, 0.0f, 0.0f, 1.0f);
 
