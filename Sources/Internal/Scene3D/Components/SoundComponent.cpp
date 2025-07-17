@@ -1,28 +1,22 @@
-#include "Sound/SoundSystem.h"
-#include "Sound/SoundEvent.h"
+#include "Scene3D/Components/SoundComponent.h"
 #include "Base/FastName.h"
+#include "Engine/Engine.h"
+#include "Engine/EngineContext.h"
+#include "Reflection/ReflectedMeta.h"
+#include "Reflection/ReflectionRegistrator.h"
 #include "Scene3D/Components/ComponentHelpers.h"
+#include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Entity.h"
 #include "Scene3D/Scene.h"
-#include "Scene3D/Components/SoundComponent.h"
-#include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Systems/EventSystem.h"
 #include "Scene3D/Systems/GlobalEventSystem.h"
 #include "Scene3D/Systems/SoundUpdateSystem.h"
+#include "Sound/SoundEvent.h"
+#include "Sound/SoundSystem.h"
 #include "Utils/Utils.h"
-#include "Reflection/ReflectionRegistrator.h"
-#include "Reflection/ReflectedMeta.h"
-#include "Engine/Engine.h"
-#include "Engine/EngineContext.h"
 
 namespace DAVA
 {
-DAVA_VIRTUAL_REFLECTION_IMPL(SoundComponentElement)
-{
-    ReflectionRegistrator<SoundComponentElement>::Begin()
-    .End();
-}
-
 template <>
 bool AnyCompare<SoundComponentElement>::IsEqual(const Any& v1, const Any& v2)
 {
@@ -40,17 +34,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(SoundComponent)
 {
     ReflectionRegistrator<SoundComponent>::Begin()
     .ConstructorByPointer()
-    .Field("events", &SoundComponent::events)[M::DisplayName("Events")]
     .End();
-}
-
-SoundComponent::SoundComponent()
-{
-}
-
-SoundComponent::~SoundComponent()
-{
-    RemoveAllEvents();
 }
 
 void SoundComponent::AddSoundEvent(SoundEvent* _event, uint32 flags /*= 0*/, const Vector3& direction /*= Vector3(1.f, 0.f, 0.f)*/)
@@ -156,62 +140,4 @@ void SoundComponent::SetLocalDirection(const DAVA::Vector3& direction)
     for (uint32 i = 0; i < eventsCount; ++i)
         SetLocalDirection(i, direction);
 }
-
-Component* SoundComponent::Clone(Entity* toEntity)
-{
-    SoundComponent* soundComponent = new SoundComponent();
-    soundComponent->SetEntity(toEntity);
-
-    SoundSystem* soundSystem = GetEngineContext()->soundSystem;
-    int32 eventCount = static_cast<int32>(events.size());
-    for (int32 i = 0; i < eventCount; ++i)
-    {
-        SoundEvent* clonedEvent = soundSystem->CloneEvent(events[i].soundEvent);
-        soundComponent->AddSoundEvent(clonedEvent, events[i].flags, events[i].localDirection);
-        clonedEvent->Release();
-    }
-
-    return soundComponent;
-}
-
-void SoundComponent::Serialize(KeyedArchive* archive, SerializationContext* serializationContext)
-{
-    Component::Serialize(archive, serializationContext);
-
-    if (archive)
-    {
-        uint32 eventsCount = static_cast<uint32>(events.size());
-        archive->SetUInt32("sc.eventCount", eventsCount);
-        for (uint32 i = 0; i < eventsCount; ++i)
-        {
-            KeyedArchive* eventArchive = new KeyedArchive();
-
-            GetEngineContext()->soundSystem->SerializeEvent(events[i].soundEvent, eventArchive);
-            eventArchive->SetUInt32("sce.flags", events[i].flags);
-            eventArchive->SetVector3("sce.localDirection", events[i].localDirection);
-
-            archive->SetArchive(KeyedArchive::GenKeyFromIndex(i), eventArchive);
-            SafeRelease(eventArchive);
-        }
-    }
-}
-
-void SoundComponent::Deserialize(KeyedArchive* archive, SerializationContext* serializationContext)
-{
-    events.clear();
-
-    if (archive)
-    {
-        uint32 eventsCount = archive->GetUInt32("sc.eventCount");
-        for (uint32 i = 0; i < eventsCount; ++i)
-        {
-            KeyedArchive* eventArchive = archive->GetArchive(KeyedArchive::GenKeyFromIndex(i));
-            SoundEvent* sEvent = GetEngineContext()->soundSystem->DeserializeEvent(eventArchive);
-            AddSoundEvent(sEvent, eventArchive->GetUInt32("sce.flags"), eventArchive->GetVector3("sce.localDirection", Vector3(1.f, 0.f, 0.f)));
-            SafeRelease(sEvent);
-        }
-    }
-
-    Component::Deserialize(archive, serializationContext);
-}
-};
+}; // namespace DAVA
