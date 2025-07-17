@@ -93,7 +93,7 @@ private:
     {
         Header()
             : version(0)
-            , nodeCount(0){};
+            , nodeCount(0) {};
 
         char signature[4];
         int32 version;
@@ -347,13 +347,13 @@ private:
     /**
      * @brief Loads a data node from a file and adds it to the scene hierarchy
      * @param scene Pointer to the Scene where the data node will be loaded
-     * @param parent Pointer to the parent DataNode where the loaded node will be attached
      * @param file Pointer to the File containing the node data to be loaded
      * @return true if the data node was successfully loaded, false otherwise
      */
-    bool LoadDataNode(Scene* scene, DataNode* parent, File* file);
+    bool LoadDataNode(Scene* scene, File* file);
 
-    bool LoadDataNodeFromArchive(Scene* scene, KeyedArchive* archive);
+    bool LoadDataNodeInternal(Scene* scene, KeyedArchive* archive, uint32 currFilePos = 0);
+
     bool LoadHierarchyFromArchive(Scene* scene, Entity* parent, KeyedArchive* archive);
 
     /**

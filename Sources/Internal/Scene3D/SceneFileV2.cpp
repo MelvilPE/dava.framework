@@ -518,9 +518,9 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
             return GetError();
         }
 
-        for (int k = 0; k < dataNodeCount; ++k)
+        for (int32 dataNodeIndex = 0; dataNodeIndex < dataNodeCount; ++dataNodeIndex)
         {
-            const bool nodeLoaded = LoadDataNode(scene, nullptr, file);
+            const bool nodeLoaded = LoadDataNode(scene, file);
             if (!nodeLoaded)
             {
                 Logger::Error("SceneFileV2::LoadScene LoadDataNode failed in file: %s", filename.GetAbsolutePathname().c_str());
@@ -611,7 +611,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
         for (uint32 dataNodeIndex = 0; dataNodeIndex < dataNodeCount; ++dataNodeIndex)
         {
             KeyedArchive* nodeArchive = dataNodes[dataNodeIndex].AsKeyedArchive();
-            if (!LoadDataNodeFromArchive(scene, nodeArchive))
+            if (!LoadDataNodeInternal(scene, nodeArchive))
             {
                 Logger::Error("SceneFileV2::LoadScene LoadDataNodeFromArchive failed at index %d in file: %s", dataNodeIndex, filename.GetAbsolutePathname().c_str());
                 SetError(ERROR_FILE_READ_ERROR);
@@ -651,7 +651,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
 
             for (int32 geometryNodeIndex = 0; geometryNodeIndex < geometryNodeCount; ++geometryNodeIndex)
             {
-                const bool nodeLoaded = LoadDataNode(scene, nullptr, geometryFile);
+                const bool nodeLoaded = LoadDataNode(scene, geometryFile);
                 if (!nodeLoaded)
                 {
                     Logger::Error("SceneFileV2::LoadScene LoadDataNode for geometry failed in file: %s", filename.GetAbsolutePathname().c_str());
@@ -945,16 +945,30 @@ bool SceneFileV2::SaveDataNode(DataNode* node, File* file)
     return true;
 }
 
-bool SceneFileV2::LoadDataNode(Scene* scene, DataNode* parent, File* file)
+bool SceneFileV2::LoadDataNode(Scene* scene, File* file)
 {
-    bool loaded = true;
     uint32 currFilePos = static_cast<uint32>(file->GetPos());
-    ScopedPtr<KeyedArchive> archive(new KeyedArchive());
-    loaded &= archive->Load(file);
 
+    ScopedPtr<KeyedArchive> archive(new KeyedArchive());
+    if (!archive->Load(file))
+    {
+        Logger::Warning("[SceneFileV2::LoadDataNode] failed to load data node archive !");
+        return false;
+    }
+
+    if (!LoadDataNodeInternal(scene, archive, currFilePos))
+    {
+        Logger::Warning("[SceneFileV2::LoadDataNode] failed to load data node from archive !");
+        return false;
+    }
+
+    return true;
+}
+
+bool SceneFileV2::LoadDataNodeInternal(Scene* scene, KeyedArchive* archive, uint32 currFilePos)
+{
     String name = archive->GetString("##name");
     DataNode* node = dynamic_cast<DataNode*>(ObjectFactory::Instance()->New<BaseObject>(name));
-
     if (!node)
     {
         return false;
@@ -965,6 +979,7 @@ bool SceneFileV2::LoadDataNode(Scene* scene, DataNode* parent, File* file)
         SafeRelease(node);
         return false;
     }
+
     node->SetScene(scene);
     node->Load(archive, &serializationContext);
 
@@ -980,40 +995,7 @@ bool SceneFileV2::LoadDataNode(Scene* scene, DataNode* parent, File* file)
     }
 
     AddToNodeMap(node);
-    SafeRelease(node);
-    return loaded;
-}
 
-bool SceneFileV2::LoadDataNodeFromArchive(Scene* scene, KeyedArchive* archive)
-{
-    String name = archive->GetString("##name");
-    DataNode* node = dynamic_cast<DataNode*>(ObjectFactory::Instance()->New<BaseObject>(name));
-    if (!node)
-    {
-        return false;
-    }
-
-    if (node->GetClassName() == "DataNode")
-    {
-        SafeRelease(node);
-        return false;
-    }
-
-    node->SetScene(scene);
-    node->Load(archive, &serializationContext);
-
-    if (name == "PolygonGroup")
-    {
-        // serializationContext.AddLoadedPolygonGroup(static_cast<PolygonGroup*>(node), currFilePos);
-    }
-
-    if (name == "ParticleEmitterNode")
-    {
-        serializationContext.AddSavedEmitterNode(static_cast<ParticleEmitterNode*>(node));
-        return true;
-    }
-
-    AddToNodeMap(node);
     SafeRelease(node);
     return true;
 }
