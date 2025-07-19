@@ -1,8 +1,10 @@
 #include "mainwindow.h"
 
+#include "Classes/Application/FileSystemData.h"
 #include "Classes/Qt/CubemapEditor/CubeMapTextureBrowser.h"
 #include "Classes/Qt/CubemapEditor/CubemapUtils.h"
 #include "Classes/Qt/DebugTools/VersionInfoWidget/VersionInfoWidget.h"
+#include "Classes/Qt/DockLandscapeEditorControls/LandscapeEditorShortcutManager.h"
 #include "Classes/Qt/ImageSplitterDialog/ImageSplitterDialog.h"
 #include "Classes/Qt/MaterialEditor/MaterialEditor.h"
 #include "Classes/Qt/QualitySwitcher/QualitySwitcher.h"
@@ -12,13 +14,11 @@
 #include "Classes/Qt/TextureBrowser/TextureCache.h"
 #include "Classes/Qt/Tools/BaseAddEntityDialog/BaseAddEntityDialog.h"
 #include "Classes/Qt/Tools/DeveloperTools/DeveloperTools.h"
+#include "Classes/Qt/Tools/ExportSceneDialog/ExportSceneDialog.h"
 #include "Classes/Qt/Tools/HeightDeltaTool/HeightDeltaTool.h"
+#include "Classes/Qt/Tools/LoggerOutput/ErrorDialogOutput.h"
 #include "Classes/Qt/Tools/PathDescriptor/PathDescriptor.h"
 #include "Classes/Qt/Tools/ToolButtonWithWidget/ToolButtonWithWidget.h"
-#include "Classes/Qt/Tools/ExportSceneDialog/ExportSceneDialog.h"
-#include "Classes/Qt/Tools/LoggerOutput/ErrorDialogOutput.h"
-#include "Classes/Qt/DockLandscapeEditorControls/LandscapeEditorShortcutManager.h"
-#include "Classes/Application/FileSystemData.h"
 
 #include <REPlatform/Commands/AddComponentCommand.h>
 #include <REPlatform/Commands/CustomColorsCommands2.h>
@@ -31,8 +31,8 @@
 #include <REPlatform/Commands/WayEditCommands.h>
 #include <REPlatform/DataNodes/ProjectManagerData.h>
 #include <REPlatform/DataNodes/SceneData.h>
-#include <REPlatform/DataNodes/Settings/GlobalSceneSettings.h>
 #include <REPlatform/DataNodes/SelectionData.h>
+#include <REPlatform/DataNodes/Settings/GlobalSceneSettings.h>
 #include <REPlatform/DataNodes/Settings/RESettings.h>
 #include <REPlatform/DataNodes/SpritesPackerModule.h>
 #include <REPlatform/Deprecated/EditorConfig.h>
@@ -48,8 +48,6 @@
 #include <REPlatform/Scene/Systems/EditorLightSystem.h>
 #include <REPlatform/Scene/Systems/EditorMaterialSystem.h>
 #include <REPlatform/Scene/Systems/EditorVegetationSystem.h>
-#include <REPlatform/Scene/Systems/EditorVegetationSystem.h>
-#include <REPlatform/Scene/Systems/EditorVegetationSystem.h>
 #include <REPlatform/Scene/Systems/HeightmapEditorSystem.h>
 #include <REPlatform/Scene/Systems/LandscapeEditorDrawSystem.h>
 #include <REPlatform/Scene/Systems/PathSystem.h>
@@ -64,16 +62,17 @@
 #include <TextureCompression/TextureConverter.h>
 #include <Version/Version.h>
 
-#include <QtTools/ConsoleWidget/LogWidget.h>
 #include <QtTools/ConsoleWidget/LogModel.h>
-#include <QtTools/ConsoleWidget/PointerSerializer.h>
+#include <QtTools/ConsoleWidget/LogWidget.h>
 #include <QtTools/ConsoleWidget/LoggerOutputObject.h>
+#include <QtTools/ConsoleWidget/PointerSerializer.h>
 #include <QtTools/FileDialogs/FindFileDialog.h>
 
-#include <TArc/WindowSubSystem/Private/WaitDialog.h>
-#include <TArc/Core/FieldBinder.h>
 #include <TArc/Core/Deprecated.h>
+#include <TArc/Core/FieldBinder.h>
 #include <TArc/Utils/Utils.h>
+#include <TArc/WindowSubSystem/Private/WaitDialog.h>
+#include <TArc/WindowSubSystem/QtAction.h>
 
 #include <Engine/Engine.h>
 #include <Engine/PlatformApiQt.h>
@@ -82,10 +81,10 @@
 #include <Render/2D/Sprite.h>
 #include <Render/Highlevel/LandscapeThumbnails.h>
 #include <Scene3D/Components/ActionComponent.h>
+#include <Scene3D/Components/Controller/RotationControllerComponent.h>
+#include <Scene3D/Components/Controller/WASDControllerComponent.h>
 #include <Scene3D/Components/TextComponent.h>
 #include <Scene3D/Components/Waypoint/PathComponent.h>
-#include <Scene3D/Components/Controller/WASDControllerComponent.h>
-#include <Scene3D/Components/Controller/RotationControllerComponent.h>
 #include <Scene3D/Systems/StaticOcclusionBuildSystem.h>
 #include <Scene3D/Systems/StaticOcclusionSystem.h>
 #include <Utils/StringFormat.h>
@@ -125,7 +124,7 @@ DAVA::RefPtr<DAVA::SceneEditor2> GetCurrentScene()
     }
     return result;
 }
-}
+} // namespace MainWindowDetails
 
 QtMainWindow::QtMainWindow(DAVA::UI* tarcUI_, QWidget* parent)
     : QMainWindow(parent)
@@ -161,7 +160,7 @@ QtMainWindow::QtMainWindow(DAVA::UI* tarcUI_, QWidget* parent)
     PathDescriptor::InitializePathDescriptors();
 
     ui->setupUi(this);
-    setObjectName("ResourceEditor"); //we need to support old names to save settings
+    setObjectName("ResourceEditor"); // we need to support old names to save settings
 
     SetupTitle(DAVA::String());
 
@@ -171,6 +170,7 @@ QtMainWindow::QtMainWindow(DAVA::UI* tarcUI_, QWidget* parent)
     SetupMainMenu();
     SetupToolBars();
     SetupActions();
+    SetupPlugins();
 
     // create tool windows
     new TextureBrowser(this);
@@ -342,7 +342,7 @@ void QtMainWindow::SetupDocks()
         LogWidget* logWidget = new LogWidget();
         logWidget->SetConvertFunction(&PointerSerializer::CleanUpString);
 
-        LoggerOutputObject* loggerOutput = new LoggerOutputObject(); //will be removed by DAVA::Logger
+        LoggerOutputObject* loggerOutput = new LoggerOutputObject(); // will be removed by DAVA::Logger
         connect(loggerOutput, &LoggerOutputObject::OutputReady, logWidget, &LogWidget::AddMessage, Qt::DirectConnection);
 
         connect(logWidget, &LogWidget::ItemClicked, this, &QtMainWindow::OnConsoleItemClicked);
@@ -404,10 +404,10 @@ void QtMainWindow::SetupActions()
 
     connect(ui->actionHeightmap_Delta_Tool, SIGNAL(triggered()), this, SLOT(OnGenerateHeightDelta()));
 
-    //Help
+    // Help
     QObject::connect(ui->actionHelp, SIGNAL(triggered()), this, SLOT(OnOpenHelp()));
 
-    //Landscape editors toggled
+    // Landscape editors toggled
     QObject::connect(SceneSignals::Instance(), &SceneSignals::LandscapeEditorToggled, this, &QtMainWindow::OnLandscapeEditorToggled);
 
     // Debug functions
@@ -423,12 +423,10 @@ void QtMainWindow::SetupActions()
     connect(ui->actionReplaceTextureMipmap, &QAction::triggered, developerTools, &DeveloperTools::OnReplaceTextureMipmap);
     connect(ui->actionToggleUseInstancing, &QAction::triggered, developerTools, &DeveloperTools::OnToggleLandscapeInstancing);
 
-    connect(ui->actionDumpTextures, &QAction::triggered, [] {
-        DAVA::Texture::DumpTextures();
-    });
-    connect(ui->actionDumpSprites, &QAction::triggered, [] {
-        DAVA::Sprite::DumpSprites();
-    });
+    connect(ui->actionDumpTextures, &QAction::triggered, []
+            { DAVA::Texture::DumpTextures(); });
+    connect(ui->actionDumpSprites, &QAction::triggered, []
+            { DAVA::Sprite::DumpSprites(); });
 
     connect(ui->actionCreateTestHardSkinnedObject, SIGNAL(triggered()), developerTools, SLOT(OnDebugCreateTestHardSkinnedObject()));
     connect(ui->actionCreateTestSoftSkinnedObject, SIGNAL(triggered()), developerTools, SLOT(OnDebugCreateTestSoftSkinnedObject()));
@@ -436,6 +434,53 @@ void QtMainWindow::SetupActions()
     QObject::connect(ui->actionSnapCameraToLandscape, SIGNAL(triggered(bool)), this, SLOT(OnSnapCameraToLandscape(bool)));
 
     QObject::connect(ui->actionValidateScene, SIGNAL(triggered()), this, SLOT(OnValidateScene()));
+}
+
+void QtMainWindow::SetupPlugins()
+{
+    using namespace DAVA;
+
+    // ContextAccessor* accessor = GetAccessor();
+
+    FilePath pluginsPath = FilePath("~res:/ResourceEditor/Plugins/");
+    if (!pluginsPath.Exists())
+    {
+        Logger::Info("[QtMainWindow::SetupPlugins] plugins directory doesn't exists at %s", pluginsPath.GetAbsolutePathname().c_str());
+    }
+    else
+    {
+        Vector<FilePath> pluginNames = GetEngineContext()->fileSystem->EnumerateDirectoriesInDirectory(pluginsPath, false);
+
+        for (uint32 pluginIndex = 0; pluginIndex < pluginNames.size(); pluginIndex++)
+        {
+            FilePath copy(pluginNames[pluginIndex]);
+            copy.ReplaceFilename("Main.py");
+            if (copy.Exists())
+            {
+                String pluginName = pluginNames[pluginIndex].GetLastDirectoryName();
+                /*
+                QtAction* action = new QtAction(accessor, QString(pluginName.c_str()));
+                KeyBindableActionInfo info;
+                info.blockName = "Plugins";
+
+                FieldDescriptor fieldDescr;
+                fieldDescr.fieldName = DAVA::FastName(SceneData::scenePropertyName);
+                fieldDescr.type = DAVA::ReflectedTypeDB::Get<SceneData>();
+                action->SetStateUpdationFunction(QtAction::Enabled, fieldDescr, [](const DAVA::Any& value) -> DAVA::Any
+                                                 { return value.CanCast<SceneData::TSceneType>() && value.Cast<SceneData::TSceneType>().Get() != nullptr; });
+
+                connections.AddConnection(action, &QAction::triggered, DAVA::Bind(static_cast<void (SceneManagerModule::*)(bool)>(&SceneManagerModule::SaveScene), this, false));
+
+                ActionPlacementInfo placementInfo;
+                placementInfo.AddPlacementPoint(CreateMenuPoint(MenuItems::menuFile, { InsertionParams::eInsertionMethod::AfterItem, "Open Scene Quickly" }));
+                placementInfo.AddPlacementPoint(CreateToolbarPoint("mainToolBar", { InsertionParams::eInsertionMethod::AfterItem, "Open Scene" }));
+
+                ui->AddAction(mainWindowKey, placementInfo, action);
+                */
+                Logger::Info("Test");
+            }
+        }
+    }
 }
 
 // ###################################################################################################
@@ -545,13 +590,11 @@ void QtMainWindow::SceneCommandExecuted(DAVA::SceneEditor2* scene, const DAVA::R
         UpdateWayEditor(commandNotification);
 
         DAVA::Vector<DAVA::Entity*> entities;
-        commandNotification.ForEach<DAVA::AddComponentCommand>([&](const DAVA::AddComponentCommand* cmd) {
-            entities.push_back(cmd->GetEntity());
-        });
+        commandNotification.ForEach<DAVA::AddComponentCommand>([&](const DAVA::AddComponentCommand* cmd)
+                                                               { entities.push_back(cmd->GetEntity()); });
 
-        commandNotification.ForEach<DAVA::RemoveComponentCommand>([&](const DAVA::RemoveComponentCommand* cmd) {
-            entities.push_back(cmd->GetEntity());
-        });
+        commandNotification.ForEach<DAVA::RemoveComponentCommand>([&](const DAVA::RemoveComponentCommand* cmd)
+                                                                  { entities.push_back(cmd->GetEntity()); });
 
         for (DAVA::Entity* e : entities)
         {
