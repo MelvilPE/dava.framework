@@ -2,18 +2,19 @@
 
 #include "ui_mainwindow.h"
 
+
 #include <REPlatform/Scene/SceneEditor2.h>
 
+#include <TArc/Models/RecentMenuItems.h>
 #include <TArc/DataProcessing/DataListener.h>
 #include <TArc/DataProcessing/DataWrapper.h>
-#include <TArc/Models/RecentMenuItems.h>
 #include <TArc/WindowSubSystem/UI.h>
 
-#include <TArc/Utils/QtDelayedExecutor.h>
 #include <TArc/Utils/ShortcutChecker.h>
+#include <TArc/Utils/QtDelayedExecutor.h>
 
-#include <QDockWidget>
 #include <QMainWindow>
+#include <QDockWidget>
 #include <QPointer>
 
 class RECommandNotificationObject;
@@ -26,7 +27,7 @@ namespace DAVA
 {
 class RenderWidget;
 class FieldBinder;
-} // namespace DAVA
+}
 
 class QtMainWindow : public QMainWindow, private DAVA::DataListener
 {
@@ -116,7 +117,6 @@ protected:
     void SetupStatusBar();
     void SetupDocks();
     void SetupActions();
-    void SetupPlugins();
 
     void StartGlobalInvalidateTimer();
 
@@ -159,7 +159,7 @@ private:
 
     void OnDataChanged(const DAVA::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields) override;
 
-    // Need for any debug functionality
+    //Need for any debug functionality
     QPointer<DeveloperTools> developerTools;
     QPointer<VersionInfoWidget> versionInfoWidget;
 
