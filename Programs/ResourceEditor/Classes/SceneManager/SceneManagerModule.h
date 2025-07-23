@@ -57,7 +57,7 @@ private:
     void CloseAllScenes(bool needSavingReqiest);
     void ReloadAllTextures(DAVA::eGPUFamily gpu);
     void ReloadTextures(DAVA::Vector<DAVA::Texture*> textures);
-    void RunPlugin(DAVA::String pluginName);
+    void RunPlugin(DAVA::String pluginName, DAVA::FilePath scriptPath);
 
     /// Fields value handlers
     void OnProjectPathChanged(const DAVA::Any& projectPath);

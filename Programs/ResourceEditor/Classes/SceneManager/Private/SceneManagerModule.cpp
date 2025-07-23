@@ -55,6 +55,9 @@
 #include <QUrl>
 #include <QtGlobal>
 
+#include <fstream>
+#include <iostream>
+
 #define TEXTURE_GPU_FIELD_NAME "TexturesGPU"
 
 namespace SceneManagerModuleDetail
@@ -262,9 +265,43 @@ void SceneManagerModule::PostInit()
     }
 }
 
-void SceneManagerModule::RunPlugin(DAVA::String pluginName)
+void SceneManagerModule::RunPlugin(DAVA::String pluginName, DAVA::FilePath scriptPath)
 {
-    DAVA::Logger::Warning("[SceneManagerModule::RunPlugin] %s", pluginName.c_str());
+    using namespace DAVA;
+
+    Logger::Warning("[SceneManagerModule::RunPlugin] %s", pluginName.c_str());
+
+    FilePath pythonPath = FilePath("~res:/ResourceEditor/Python/python.exe");
+
+    FilePath pluginsPath = FilePath("~res:/ResourceEditor/Plugins/");
+
+    std::string driveLetter = pluginsPath.GetAbsolutePathname().substr(0, 2);
+
+    // scriptPath Already contains "~res:/ResourceEditor/Plugins/pluginName/Main.py"
+
+    std::string command = driveLetter + " && cd \"" + scriptPath.GetDirectory().GetAbsolutePathname() + "\" && \"" + pythonPath.GetAbsolutePathname() + "\"" + " \"" + scriptPath.GetAbsolutePathname() + "\" > output.txt 2>&1";
+
+    Logger::Info("[SceneManagerModule::RunPlugin] Running command: %s", command.c_str());
+
+    int result = system(command.c_str());
+    if (result != 0)
+    {
+        Logger::Error("[SceneManagerModule::RunPlugin] Failed to run plugin script with error code: %d", result);
+    }
+
+    FilePath outputFilepath(scriptPath);
+    outputFilepath.ReplaceFilename("output.txt");
+
+    std::ifstream outputFile(outputFilepath.GetAbsolutePathname());
+    if (outputFile.is_open())
+    {
+        std::string line;
+        while (std::getline(outputFile, line))
+        {
+            Logger::Info("[Python output] %s", line.c_str());
+        }
+        outputFile.close();
+    }
 }
 
 void SceneManagerModule::CreateModuleControls(DAVA::UI* ui)
@@ -585,34 +622,43 @@ void SceneManagerModule::CreateModuleActions(DAVA::UI* ui)
     }
 
     // Python Plugins
-    FilePath pluginsPath = FilePath("~res:/ResourceEditor/Plugins/");
-    if (!pluginsPath.Exists())
+    FilePath pythonPath = FilePath("~res:/ResourceEditor/Python/python.exe");
+    if (!pythonPath.Exists())
     {
-        Logger::Info("[QtMainWindow::SetupPlugins] plugins directory doesn't exists at %s", pluginsPath.GetAbsolutePathname().c_str());
+        Logger::Info("[QtMainWindow::SetupPlugins] pythonPath directory doesn't exists at %s", pythonPath.GetAbsolutePathname().c_str());
     }
     else
     {
-        Vector<FilePath> pluginNames = GetEngineContext()->fileSystem->EnumerateDirectoriesInDirectory(pluginsPath, false);
-
-        for (uint32 pluginIndex = 0; pluginIndex < pluginNames.size(); pluginIndex++)
+        FilePath pluginsPath = FilePath("~res:/ResourceEditor/Plugins/");
+        if (!pluginsPath.Exists())
         {
-            FilePath script(pluginNames[pluginIndex]);
-            script.ReplaceFilename("Main.py");
-            if (script.Exists())
+            Logger::Info("[QtMainWindow::SetupPlugins] plugins directory doesn't exists at %s", pluginsPath.GetAbsolutePathname().c_str());
+        }
+        else
+        {
+            Vector<FilePath> pluginNames = GetEngineContext()->fileSystem->EnumerateDirectoriesInDirectory(pluginsPath, false);
+
+            for (uint32 pluginIndex = 0; pluginIndex < pluginNames.size(); pluginIndex++)
             {
-                String pluginName = pluginNames[pluginIndex].GetLastDirectoryName();
+                FilePath scriptPath(pluginNames[pluginIndex]);
+                scriptPath.ReplaceFilename("Main.py");
+                if (scriptPath.Exists())
+                {
+                    String pluginName = pluginNames[pluginIndex].GetLastDirectoryName();
 
-                QtAction* action = new QtAction(accessor, QString(pluginName.c_str()));
-                connections.AddConnection(action, &QAction::triggered, DAVA::Bind(static_cast<void (SceneManagerModule::*)(DAVA::String)>(&SceneManagerModule::RunPlugin), this, pluginName));
+                    QtAction* action = new QtAction(accessor, QString(pluginName.c_str()));
+                    connections.AddConnection(action, &QAction::triggered, DAVA::Bind(static_cast<void (SceneManagerModule::*)(DAVA::String, DAVA::FilePath)>(&SceneManagerModule::RunPlugin), this, pluginName, scriptPath));
 
-                ActionPlacementInfo placementInfo;
-                placementInfo.AddPlacementPoint(CreateMenuPoint(MenuItems::menuPlugins, { InsertionParams::eInsertionMethod::AfterItem, "Help" }));
-                placementInfo.AddPlacementPoint(CreateToolbarPoint("mainToolBar", { InsertionParams::eInsertionMethod::AfterItem, "Plugins" }));
+                    ActionPlacementInfo placementInfo;
+                    placementInfo.AddPlacementPoint(CreateMenuPoint(MenuItems::menuPlugins, { InsertionParams::eInsertionMethod::AfterItem, "Help" }));
+                    placementInfo.AddPlacementPoint(CreateToolbarPoint("mainToolBar", { InsertionParams::eInsertionMethod::AfterItem, "Plugins" }));
 
-                ui->AddAction(mainWindowKey, placementInfo, action);
+                    ui->AddAction(mainWindowKey, placementInfo, action);
+                }
             }
         }
     }
+
     {
         //////////////////////////////////////////////////////////////////////////////////////////////
         // Menu View
