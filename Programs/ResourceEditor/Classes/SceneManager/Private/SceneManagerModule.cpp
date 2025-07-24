@@ -271,7 +271,12 @@ void SceneManagerModule::RunPlugin(DAVA::String pluginName, DAVA::FilePath scrip
 
     Logger::Warning("[SceneManagerModule::RunPlugin] %s", pluginName.c_str());
 
-    FilePath pythonPath = FilePath("~res:/ResourceEditor/Python/python.exe");
+    int python = system("python --version");
+    if (python != 0)
+    {
+        Logger::Warning("Python is not installed / not accessible via PATH. Cancelling plugin.");
+        return;
+    }
 
     FilePath pluginsPath = FilePath("~res:/ResourceEditor/Plugins/");
 
@@ -279,7 +284,7 @@ void SceneManagerModule::RunPlugin(DAVA::String pluginName, DAVA::FilePath scrip
 
     // scriptPath Already contains "~res:/ResourceEditor/Plugins/pluginName/Main.py"
 
-    std::string command = driveLetter + " && cd \"" + scriptPath.GetDirectory().GetAbsolutePathname() + "\" && \"" + pythonPath.GetAbsolutePathname() + "\"" + " \"" + scriptPath.GetAbsolutePathname() + "\" > output.txt 2>&1";
+    std::string command = driveLetter + " && cd \"" + scriptPath.GetDirectory().GetAbsolutePathname() + "\" && python \"" + scriptPath.GetAbsolutePathname() + "\" > output.txt 2>&1";
 
     Logger::Info("[SceneManagerModule::RunPlugin] Running command: %s", command.c_str());
 
@@ -622,39 +627,31 @@ void SceneManagerModule::CreateModuleActions(DAVA::UI* ui)
     }
 
     // Python Plugins
-    FilePath pythonPath = FilePath("~res:/ResourceEditor/Python/python.exe");
-    if (!pythonPath.Exists())
+    FilePath pluginsPath = FilePath("~res:/ResourceEditor/Plugins/");
+    if (!pluginsPath.Exists())
     {
-        Logger::Info("[QtMainWindow::SetupPlugins] pythonPath directory doesn't exists at %s", pythonPath.GetAbsolutePathname().c_str());
+        Logger::Info("[QtMainWindow::SetupPlugins] plugins directory doesn't exists at %s", pluginsPath.GetAbsolutePathname().c_str());
     }
     else
     {
-        FilePath pluginsPath = FilePath("~res:/ResourceEditor/Plugins/");
-        if (!pluginsPath.Exists())
-        {
-            Logger::Info("[QtMainWindow::SetupPlugins] plugins directory doesn't exists at %s", pluginsPath.GetAbsolutePathname().c_str());
-        }
-        else
-        {
-            Vector<FilePath> pluginNames = GetEngineContext()->fileSystem->EnumerateDirectoriesInDirectory(pluginsPath, false);
+        Vector<FilePath> pluginNames = GetEngineContext()->fileSystem->EnumerateDirectoriesInDirectory(pluginsPath, false);
 
-            for (uint32 pluginIndex = 0; pluginIndex < pluginNames.size(); pluginIndex++)
+        for (uint32 pluginIndex = 0; pluginIndex < pluginNames.size(); pluginIndex++)
+        {
+            FilePath scriptPath(pluginNames[pluginIndex]);
+            scriptPath.ReplaceFilename("Main.py");
+            if (scriptPath.Exists())
             {
-                FilePath scriptPath(pluginNames[pluginIndex]);
-                scriptPath.ReplaceFilename("Main.py");
-                if (scriptPath.Exists())
-                {
-                    String pluginName = pluginNames[pluginIndex].GetLastDirectoryName();
+                String pluginName = pluginNames[pluginIndex].GetLastDirectoryName();
 
-                    QtAction* action = new QtAction(accessor, QString(pluginName.c_str()));
-                    connections.AddConnection(action, &QAction::triggered, DAVA::Bind(static_cast<void (SceneManagerModule::*)(DAVA::String, DAVA::FilePath)>(&SceneManagerModule::RunPlugin), this, pluginName, scriptPath));
+                QtAction* action = new QtAction(accessor, QString(pluginName.c_str()));
+                connections.AddConnection(action, &QAction::triggered, DAVA::Bind(static_cast<void (SceneManagerModule::*)(DAVA::String, DAVA::FilePath)>(&SceneManagerModule::RunPlugin), this, pluginName, scriptPath));
 
-                    ActionPlacementInfo placementInfo;
-                    placementInfo.AddPlacementPoint(CreateMenuPoint(MenuItems::menuPlugins, { InsertionParams::eInsertionMethod::AfterItem, "Help" }));
-                    placementInfo.AddPlacementPoint(CreateToolbarPoint("mainToolBar", { InsertionParams::eInsertionMethod::AfterItem, "Plugins" }));
+                ActionPlacementInfo placementInfo;
+                placementInfo.AddPlacementPoint(CreateMenuPoint(MenuItems::menuPlugins, { InsertionParams::eInsertionMethod::AfterItem, "Help" }));
+                placementInfo.AddPlacementPoint(CreateToolbarPoint("mainToolBar", { InsertionParams::eInsertionMethod::AfterItem, "Plugins" }));
 
-                    ui->AddAction(mainWindowKey, placementInfo, action);
-                }
+                ui->AddAction(mainWindowKey, placementInfo, action);
             }
         }
     }
