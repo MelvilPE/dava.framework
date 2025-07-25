@@ -51,8 +51,10 @@
 #include <QActionGroup>
 #include <QList>
 #include <QMimeData>
+#include <QProcess>
 #include <QString>
 #include <QUrl>
+#include <QtConcurrent/QtConcurrent>
 #include <QtGlobal>
 
 #include <fstream>
@@ -265,47 +267,53 @@ void SceneManagerModule::PostInit()
     }
 }
 
+void SceneManagerModule::RunPluginAsync(DAVA::String pluginName, DAVA::FilePath scriptPath)
+{
+    QtConcurrent::run([=]()
+                      { RunPlugin(pluginName, scriptPath); });
+}
+
 void SceneManagerModule::RunPlugin(DAVA::String pluginName, DAVA::FilePath scriptPath)
 {
     using namespace DAVA;
 
     Logger::Warning("[SceneManagerModule::RunPlugin] %s", pluginName.c_str());
 
-    int python = system("python --version");
-    if (python != 0)
+    QProcess pythonProcess;
+
+    QString scriptDir = QString::fromStdString(scriptPath.GetDirectory().GetAbsolutePathname());
+    QString scriptFile = QString::fromStdString(scriptPath.GetAbsolutePathname());
+
+    pythonProcess.setWorkingDirectory(scriptDir);
+
+    QStringList arguments;
+    arguments << scriptFile;
+
+    pythonProcess.start("python", arguments);
+
+    if (!pythonProcess.waitForStarted())
     {
-        Logger::Warning("Python is not installed / not accessible via PATH. Cancelling plugin.");
+        Logger::Error("Failed to start python process.");
         return;
     }
 
-    FilePath pluginsPath = FilePath("~res:/ResourceEditor/Plugins/");
-
-    std::string driveLetter = pluginsPath.GetAbsolutePathname().substr(0, 2);
-
-    // scriptPath Already contains "~res:/ResourceEditor/Plugins/pluginName/Main.py"
-
-    std::string command = driveLetter + " && cd \"" + scriptPath.GetDirectory().GetAbsolutePathname() + "\" && python \"" + scriptPath.GetAbsolutePathname() + "\" > output.txt 2>&1";
-
-    Logger::Info("[SceneManagerModule::RunPlugin] Running command: %s", command.c_str());
-
-    int result = system(command.c_str());
-    if (result != 0)
+    if (!pythonProcess.waitForFinished())
     {
-        Logger::Error("[SceneManagerModule::RunPlugin] Failed to run plugin script with error code: %d", result);
+        Logger::Error("Python script did not finish properly.");
+        return;
     }
 
-    FilePath outputFilepath(scriptPath);
-    outputFilepath.ReplaceFilename("output.txt");
+    QString output = pythonProcess.readAllStandardOutput();
+    QString errorOutput = pythonProcess.readAllStandardError();
 
-    std::ifstream outputFile(outputFilepath.GetAbsolutePathname());
-    if (outputFile.is_open())
+    for (const QString& line : output.split('\n'))
     {
-        std::string line;
-        while (std::getline(outputFile, line))
-        {
-            Logger::Info("[Python output] %s", line.c_str());
-        }
-        outputFile.close();
+        Logger::Info("[Python output] %s", line.toStdString().c_str());
+    }
+
+    for (const QString& line : errorOutput.split('\n'))
+    {
+        Logger::Error("[Python error] %s", line.toStdString().c_str());
     }
 }
 
@@ -645,7 +653,7 @@ void SceneManagerModule::CreateModuleActions(DAVA::UI* ui)
                 String pluginName = pluginNames[pluginIndex].GetLastDirectoryName();
 
                 QtAction* action = new QtAction(accessor, QString(pluginName.c_str()));
-                connections.AddConnection(action, &QAction::triggered, DAVA::Bind(static_cast<void (SceneManagerModule::*)(DAVA::String, DAVA::FilePath)>(&SceneManagerModule::RunPlugin), this, pluginName, scriptPath));
+                connections.AddConnection(action, &QAction::triggered, DAVA::Bind(static_cast<void (SceneManagerModule::*)(DAVA::String, DAVA::FilePath)>(&SceneManagerModule::RunPluginAsync), this, pluginName, scriptPath));
 
                 ActionPlacementInfo placementInfo;
                 placementInfo.AddPlacementPoint(CreateMenuPoint(MenuItems::menuPlugins, { InsertionParams::eInsertionMethod::AfterItem, "Help" }));
