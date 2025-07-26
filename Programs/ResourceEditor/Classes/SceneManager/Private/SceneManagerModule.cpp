@@ -308,12 +308,18 @@ void SceneManagerModule::RunPlugin(DAVA::String pluginName, DAVA::FilePath scrip
 
     for (const QString& line : output.split('\n'))
     {
-        Logger::Info("[Python output] %s", line.toStdString().c_str());
+        if (!line.trimmed().isEmpty())
+        {
+            Logger::Info("[Python output] %s", line.toStdString().c_str());
+        }
     }
 
     for (const QString& line : errorOutput.split('\n'))
     {
-        Logger::Error("[Python error] %s", line.toStdString().c_str());
+        if (!line.trimmed().isEmpty())
+        {
+            Logger::Error("[Python error] %s", line.toStdString().c_str());
+        }
     }
 }
 
