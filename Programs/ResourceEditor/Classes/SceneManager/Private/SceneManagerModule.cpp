@@ -1,11 +1,11 @@
 #include "Classes/SceneManager/SceneManagerModule.h"
+#include "Classes/SceneManager/Private/SceneRenderWidget.h"
+#include "Classes/SceneManager/Private/SignalsAccumulator.h"
 #include "Classes/Qt/Main/mainwindow.h"
 #include "Classes/Qt/Scene/SceneSignals.h"
 #include "Classes/Qt/TextureBrowser/TextureBrowser.h"
 #include "Classes/Qt/TextureBrowser/TextureCache.h"
 #include "Classes/Qt/Tools/ExportSceneDialog/ExportSceneDialog.h"
-#include "Classes/SceneManager/Private/SceneRenderWidget.h"
-#include "Classes/SceneManager/Private/SignalsAccumulator.h"
 
 #include <REPlatform/Commands/Private/RECommandStack.h>
 #include <REPlatform/Commands/TilemaskEditorCommands.h>
@@ -28,9 +28,9 @@
 #include <REPlatform/Scene/Systems/StructureSystem.h>
 #include <REPlatform/Scene/Utils/SceneSaver.h>
 
-#include <TArc/WindowSubSystem/ActionUtils.h>
 #include <TArc/WindowSubSystem/QtAction.h>
 #include <TArc/WindowSubSystem/UI.h>
+#include <TArc/WindowSubSystem/ActionUtils.h>
 
 #include <QtTools/FileDialogs/FindFileDialog.h>
 #include <QtTools/ProjectInformation/FileSystemCache.h>
@@ -51,14 +51,9 @@
 #include <QActionGroup>
 #include <QList>
 #include <QMimeData>
-#include <QProcess>
 #include <QString>
-#include <QUrl>
-#include <QtConcurrent/QtConcurrent>
 #include <QtGlobal>
-
-#include <fstream>
-#include <iostream>
+#include <QUrl>
 
 #define TEXTURE_GPU_FIELD_NAME "TexturesGPU"
 
@@ -80,9 +75,9 @@ public:
         .End();
     }
 };
-} // namespace SceneManagerModuleDetail
+}
 
-// to use std::unique_ptr<FileSystemCache> sceneFilesCache with forward declaration
+//to use std::unique_ptr<FileSystemCache> sceneFilesCache with forward declaration
 SceneManagerModule::SceneManagerModule()
 {
     using namespace DAVA;
@@ -121,7 +116,8 @@ bool SceneManagerModule::ControlWindowClosing(const DAVA::WindowKey& key, QClose
                                       SceneData* data = context.GetData<SceneData>();
                                       DVASSERT(data != nullptr);
                                       DVASSERT(data->GetScene().Get() != nullptr);
-                                      hasChanges |= data->GetScene()->IsChanged(); });
+                                      hasChanges |= data->GetScene()->IsChanged();
+                                  });
 
     if (hasChanges == true)
     {
@@ -249,77 +245,24 @@ void SceneManagerModule::PostInit()
     {
         return v.CanCast<DAVA::FilePath>() && !v.Cast<DAVA::FilePath>().IsEmpty();
     };
-    params.getMaximumCount = [accessor]()
-    {
+    params.getMaximumCount = [accessor]() {
         return accessor->GetGlobalContext()->GetData<GeneralSettings>()->recentScenesCount;
     };
 
     recentItems.reset(new RecentMenuItems(std::move(params)));
     recentItems->actionTriggered.Connect([this](const DAVA::String& scenePath)
-                                         { OpenSceneByPath(DAVA::FilePath(scenePath)); });
+                                         {
+                                             OpenSceneByPath(DAVA::FilePath(scenePath));
+                                         });
 
     {
         DAVA::FieldDescriptor fieldDescr;
         fieldDescr.type = DAVA::ReflectedTypeDB::Get<GeneralSettings>();
         fieldDescr.fieldName = DAVA::FastName("recentScenesCount");
         fieldBinder->BindField(fieldDescr, [this](const DAVA::Any& v)
-                               { recentItems->Truncate(); });
-    }
-}
-
-void SceneManagerModule::RunPluginAsync(DAVA::String pluginName, DAVA::FilePath scriptPath)
-{
-    QtConcurrent::run([=]()
-                      { RunPlugin(pluginName, scriptPath); });
-}
-
-void SceneManagerModule::RunPlugin(DAVA::String pluginName, DAVA::FilePath scriptPath)
-{
-    using namespace DAVA;
-
-    Logger::Warning("[SceneManagerModule::RunPlugin] %s", pluginName.c_str());
-
-    QProcess pythonProcess;
-
-    QString scriptDir = QString::fromStdString(scriptPath.GetDirectory().GetAbsolutePathname());
-    QString scriptFile = QString::fromStdString(scriptPath.GetAbsolutePathname());
-
-    pythonProcess.setWorkingDirectory(scriptDir);
-
-    QStringList arguments;
-    arguments << scriptFile;
-
-    pythonProcess.start("python", arguments);
-
-    if (!pythonProcess.waitForStarted())
-    {
-        Logger::Error("Failed to start python process.");
-        return;
-    }
-
-    if (!pythonProcess.waitForFinished())
-    {
-        Logger::Error("Python script did not finish properly.");
-        return;
-    }
-
-    QString output = pythonProcess.readAllStandardOutput();
-    QString errorOutput = pythonProcess.readAllStandardError();
-
-    for (const QString& line : output.split('\n'))
-    {
-        if (!line.trimmed().isEmpty())
-        {
-            Logger::Info("[Python output] %s", line.toStdString().c_str());
-        }
-    }
-
-    for (const QString& line : errorOutput.split('\n'))
-    {
-        if (!line.trimmed().isEmpty())
-        {
-            Logger::Error("[Python error] %s", line.toStdString().c_str());
-        }
+                               {
+                                   recentItems->Truncate();
+                               });
     }
 }
 
@@ -376,8 +319,9 @@ void SceneManagerModule::CreateModuleActions(DAVA::UI* ui)
         FieldDescriptor fieldDescr;
         fieldDescr.fieldName = DAVA::FastName(ProjectManagerData::ProjectPathProperty);
         fieldDescr.type = DAVA::ReflectedTypeDB::Get<ProjectManagerData>();
-        action->SetStateUpdationFunction(QtAction::Enabled, fieldDescr, [](const DAVA::Any& value) -> DAVA::Any
-                                         { return value.CanCast<DAVA::FilePath>() && !value.Cast<DAVA::FilePath>().IsEmpty(); });
+        action->SetStateUpdationFunction(QtAction::Enabled, fieldDescr, [](const DAVA::Any& value) -> DAVA::Any {
+            return value.CanCast<DAVA::FilePath>() && !value.Cast<DAVA::FilePath>().IsEmpty();
+        });
 
         connections.AddConnection(action, &QAction::triggered, DAVA::Bind(&SceneManagerModule::CreateNewScene, this), Qt::QueuedConnection);
 
@@ -402,8 +346,9 @@ void SceneManagerModule::CreateModuleActions(DAVA::UI* ui)
         FieldDescriptor fieldDescr;
         fieldDescr.fieldName = DAVA::FastName(ProjectManagerData::ProjectPathProperty);
         fieldDescr.type = DAVA::ReflectedTypeDB::Get<ProjectManagerData>();
-        action->SetStateUpdationFunction(QtAction::Enabled, fieldDescr, [](const DAVA::Any& value) -> DAVA::Any
-                                         { return value.CanCast<DAVA::FilePath>() && !value.Cast<DAVA::FilePath>().IsEmpty(); });
+        action->SetStateUpdationFunction(QtAction::Enabled, fieldDescr, [](const DAVA::Any& value) -> DAVA::Any {
+            return value.CanCast<DAVA::FilePath>() && !value.Cast<DAVA::FilePath>().IsEmpty();
+        });
 
         connections.AddConnection(action, &QAction::triggered, DAVA::Bind(&SceneManagerModule::OpenScene, this), Qt::QueuedConnection);
 
@@ -440,7 +385,8 @@ void SceneManagerModule::CreateModuleActions(DAVA::UI* ui)
                                                  return fileSystem->Exists(projectData->GetDataSourcePath());
                                              }
 
-                                             return false; });
+                                             return false;
+                                         });
 
         connections.AddConnection(action, &QAction::triggered, DAVA::Bind(&SceneManagerModule::OpenSceneQuckly, this), Qt::QueuedConnection);
 
@@ -462,8 +408,9 @@ void SceneManagerModule::CreateModuleActions(DAVA::UI* ui)
         FieldDescriptor fieldDescr;
         fieldDescr.fieldName = DAVA::FastName(SceneData::scenePropertyName);
         fieldDescr.type = DAVA::ReflectedTypeDB::Get<SceneData>();
-        action->SetStateUpdationFunction(QtAction::Enabled, fieldDescr, [](const DAVA::Any& value) -> DAVA::Any
-                                         { return value.CanCast<SceneData::TSceneType>() && value.Cast<SceneData::TSceneType>().Get() != nullptr; });
+        action->SetStateUpdationFunction(QtAction::Enabled, fieldDescr, [](const DAVA::Any& value) -> DAVA::Any {
+            return value.CanCast<SceneData::TSceneType>() && value.Cast<SceneData::TSceneType>().Get() != nullptr;
+        });
 
         connections.AddConnection(action, &QAction::triggered, DAVA::Bind(static_cast<void (SceneManagerModule::*)(bool)>(&SceneManagerModule::SaveScene), this, false));
 
@@ -486,8 +433,9 @@ void SceneManagerModule::CreateModuleActions(DAVA::UI* ui)
         FieldDescriptor fieldDescr;
         fieldDescr.fieldName = DAVA::FastName(SceneData::scenePropertyName);
         fieldDescr.type = DAVA::ReflectedTypeDB::Get<SceneData>();
-        action->SetStateUpdationFunction(QtAction::Enabled, fieldDescr, [](const DAVA::Any& value) -> DAVA::Any
-                                         { return value.CanCast<SceneData::TSceneType>() && value.Cast<SceneData::TSceneType>().Get() != nullptr; });
+        action->SetStateUpdationFunction(QtAction::Enabled, fieldDescr, [](const DAVA::Any& value) -> DAVA::Any {
+            return value.CanCast<SceneData::TSceneType>() && value.Cast<SceneData::TSceneType>().Get() != nullptr;
+        });
 
         connections.AddConnection(action, &QAction::triggered, DAVA::Bind(static_cast<void (SceneManagerModule::*)(bool)>(&SceneManagerModule::SaveScene), this, true));
 
@@ -520,8 +468,9 @@ void SceneManagerModule::CreateModuleActions(DAVA::UI* ui)
 
         FieldDescriptor fieldDescr;
         DAVA::Reflection model = DAVA::Reflection::Create(DAVA::ReflectedObject(this));
-        action->SetStateUpdationFunction(QtAction::Enabled, model, DAVA::FastName("saveToFolderAvailable"), [](const DAVA::Any& fieldValue) -> DAVA::Any
-                                         { return fieldValue.Get<bool>(false); });
+        action->SetStateUpdationFunction(QtAction::Enabled, model, DAVA::FastName("saveToFolderAvailable"), [](const DAVA::Any& fieldValue) -> DAVA::Any {
+            return fieldValue.Get<bool>(false);
+        });
 
         ActionPlacementInfo placementInfo;
         placementInfo.AddPlacementPoint(CreateMenuPoint(MenuItems::menuFile, { InsertionParams::eInsertionMethod::AfterItem, "saveSeparator" }));
@@ -535,8 +484,9 @@ void SceneManagerModule::CreateModuleActions(DAVA::UI* ui)
     {
         QtAction* action = new QtAction(accessor, QStringLiteral("Save To Folder With Children"));
         DAVA::Reflection model = DAVA::Reflection::Create(DAVA::ReflectedObject(this));
-        action->SetStateUpdationFunction(QtAction::Enabled, model, DAVA::FastName("saveToFolderAvailable"), [](const DAVA::Any& fieldValue) -> DAVA::Any
-                                         { return fieldValue.Get<bool>(false); });
+        action->SetStateUpdationFunction(QtAction::Enabled, model, DAVA::FastName("saveToFolderAvailable"), [](const DAVA::Any& fieldValue) -> DAVA::Any {
+            return fieldValue.Get<bool>(false);
+        });
 
         ActionPlacementInfo placementInfo;
         placementInfo.AddPlacementPoint(CreateMenuPoint(MenuItems::menuFile, { InsertionParams::eInsertionMethod::AfterItem, "Export" }));
@@ -578,8 +528,7 @@ void SceneManagerModule::CreateModuleActions(DAVA::UI* ui)
     }
 
     // Undo/Redo
-    DAVA::Function<DAVA::Any(DAVA::String, const DAVA::Any&)> makeUndoRedoText = [](DAVA::String prefix, const DAVA::Any& v)
-    {
+    DAVA::Function<DAVA::Any(DAVA::String, const DAVA::Any&)> makeUndoRedoText = [](DAVA::String prefix, const DAVA::Any& v) {
         DAVA::String descr = v.Cast<DAVA::String>("");
         if (descr.empty() == false)
         {
@@ -590,8 +539,9 @@ void SceneManagerModule::CreateModuleActions(DAVA::UI* ui)
     };
     {
         QtAction* undo = new QtAction(accessor, QIcon(":/QtIcons/edit_undo.png"), QStringLiteral("Undo"));
-        undo->SetStateUpdationFunction(QtAction::Enabled, MakeFieldDescriptor<SceneData>(SceneData::sceneCanUndoPropertyName), [](const DAVA::Any& v)
-                                       { return v.Cast<bool>(false); });
+        undo->SetStateUpdationFunction(QtAction::Enabled, MakeFieldDescriptor<SceneData>(SceneData::sceneCanUndoPropertyName), [](const DAVA::Any& v) {
+            return v.Cast<bool>(false);
+        });
         undo->SetStateUpdationFunction(QtAction::Text, MakeFieldDescriptor<SceneData>(SceneData::sceneUndoDescriptionPropertyName), Bind(makeUndoRedoText, "Undo", DAVA::_1));
         undo->SetStateUpdationFunction(QtAction::Tooltip, MakeFieldDescriptor<SceneData>(SceneData::sceneUndoDescriptionPropertyName), Bind(makeUndoRedoText, "Undo", DAVA::_1));
 
@@ -602,11 +552,11 @@ void SceneManagerModule::CreateModuleActions(DAVA::UI* ui)
         info.readOnly = true;
         MakeActionKeyBindable(undo, info);
 
-        connections.AddConnection(undo, &QAction::triggered, [this]()
-                                  {
+        connections.AddConnection(undo, &QAction::triggered, [this]() {
             ContextAccessor* accessor = GetAccessor();
             DVASSERT(accessor->GetActiveContext() != nullptr);
-            accessor->GetActiveContext()->GetData<SceneData>()->GetScene()->Undo(); });
+            accessor->GetActiveContext()->GetData<SceneData>()->GetScene()->Undo();
+        });
 
         ActionPlacementInfo placementInfo;
         placementInfo.AddPlacementPoint(CreateMenuPoint(MenuItems::menuEdit, { InsertionParams::eInsertionMethod::BeforeItem }));
@@ -616,8 +566,9 @@ void SceneManagerModule::CreateModuleActions(DAVA::UI* ui)
 
     {
         QtAction* redo = new QtAction(accessor, QIcon(":/QtIcons/edit_redo.png"), QStringLiteral("Redo"));
-        redo->SetStateUpdationFunction(QtAction::Enabled, MakeFieldDescriptor<SceneData>(SceneData::sceneCanRedoPropertyName), [](const DAVA::Any& v)
-                                       { return v.Cast<bool>(false); });
+        redo->SetStateUpdationFunction(QtAction::Enabled, MakeFieldDescriptor<SceneData>(SceneData::sceneCanRedoPropertyName), [](const DAVA::Any& v) {
+            return v.Cast<bool>(false);
+        });
         redo->SetStateUpdationFunction(QtAction::Text, MakeFieldDescriptor<SceneData>(SceneData::sceneRedoDescriptionPropertyName), Bind(makeUndoRedoText, "Redo", DAVA::_1));
         redo->SetStateUpdationFunction(QtAction::Tooltip, MakeFieldDescriptor<SceneData>(SceneData::sceneRedoDescriptionPropertyName), Bind(makeUndoRedoText, "Redo", DAVA::_1));
 
@@ -628,11 +579,11 @@ void SceneManagerModule::CreateModuleActions(DAVA::UI* ui)
         info.readOnly = true;
         MakeActionKeyBindable(redo, info);
 
-        connections.AddConnection(redo, &QAction::triggered, [this]()
-                                  {
+        connections.AddConnection(redo, &QAction::triggered, [this]() {
             ContextAccessor* accessor = GetAccessor();
             DVASSERT(accessor->GetActiveContext() != nullptr);
-            accessor->GetActiveContext()->GetData<SceneData>()->GetScene()->Redo(); });
+            accessor->GetActiveContext()->GetData<SceneData>()->GetScene()->Redo();
+        });
 
         ActionPlacementInfo placementInfo;
         placementInfo.AddPlacementPoint(CreateMenuPoint(MenuItems::menuEdit, { InsertionParams::eInsertionMethod::AfterItem, "Undo" }));
@@ -640,145 +591,123 @@ void SceneManagerModule::CreateModuleActions(DAVA::UI* ui)
         ui->AddAction(mainWindowKey, placementInfo, redo);
     }
 
-    // Python Plugins
-    FilePath pluginsPath = FilePath("~res:/ResourceEditor/Plugins/");
-    if (!pluginsPath.Exists())
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    // Menu View
+    // GPU
+
+    // View/GPU action
+    QtAction* actionGPU = new QtAction(accessor, "GPU");
+
+    FieldDescriptor descriptorGPU;
+    descriptorGPU.fieldName = DAVA::FastName(SceneData::scenePropertyName);
+    descriptorGPU.type = DAVA::ReflectedTypeDB::Get<SceneData>();
+    actionGPU->SetStateUpdationFunction(QtAction::Enabled, descriptorGPU, [](const DAVA::Any& v) {
+        return v.CanCast<SceneData::TSceneType>() && v.Cast<SceneData::TSceneType>().Get() != nullptr;
+    });
+
+    ActionPlacementInfo placementGPU(CreateMenuPoint(MenuItems::menuView, InsertionParams(InsertionParams::eInsertionMethod::BeforeItem)));
+    ui->AddAction(DAVA::mainWindowKey, placementGPU, actionGPU);
+
+    QActionGroup* actionGroup = new QActionGroup(actionGPU);
+    actionGroup->setExclusive(true);
+
+    DAVA::Vector<QAction*> gpuFormatActions;
+    ActionPlacementInfo placement(CreateMenuPoint(QList<QString>() << MenuItems::menuView
+                                                                   << "GPU"));
+
+    auto createGpuAction = [&](DAVA::eGPUFamily gpu)
     {
-        Logger::Info("[QtMainWindow::SetupPlugins] plugins directory doesn't exists at %s", pluginsPath.GetAbsolutePathname().c_str());
+        QtAction* action = new QtAction(accessor, GlobalEnumMap<DAVA::eGPUFamily>::Instance()->ToString(gpu), nullptr);
+        actionGroup->addAction(action);
+
+        FieldDescriptor enabledFieldDescr;
+        enabledFieldDescr.fieldName = DAVA::FastName(SceneData::sceneLandscapeToolsPropertyName);
+        enabledFieldDescr.type = DAVA::ReflectedTypeDB::Get<SceneData>();
+        action->SetStateUpdationFunction(QtAction::Enabled, enabledFieldDescr, [](const DAVA::Any& v) -> DAVA::Any
+                                         {
+                                             return v.CanCast<DAVA::uint32>() && v.Cast<DAVA::uint32>() == 0;
+                                         });
+
+        FieldDescriptor checkedFieldDescr;
+        checkedFieldDescr.fieldName = DAVA::FastName(TEXTURE_GPU_FIELD_NAME);
+        checkedFieldDescr.type = DAVA::ReflectedTypeDB::Get<SceneManagerModuleDetail::SceneManagerGlobalData>();
+        action->SetStateUpdationFunction(QtAction::Checked, checkedFieldDescr, [gpu](const DAVA::Any& v)
+                                         {
+                                             return v.CanCast<DAVA::eGPUFamily>() && v.Cast<DAVA::eGPUFamily>() == gpu;
+                                         });
+        connections.AddConnection(action, &QAction::triggered, DAVA::Bind(&SceneManagerModule::ReloadAllTextures, this, gpu), Qt::QueuedConnection);
+
+        ui->AddAction(DAVA::mainWindowKey, placement, action);
+        gpuFormatActions.push_back(action);
+    };
+
+    for (int gpu = 0; gpu < DAVA::eGPUFamily::GPU_DEVICE_COUNT; ++gpu)
+    {
+        createGpuAction(static_cast<DAVA::eGPUFamily>(gpu));
     }
-    else
+
+    // Separator
     {
-        Vector<FilePath> pluginNames = GetEngineContext()->fileSystem->EnumerateDirectoriesInDirectory(pluginsPath, false);
+        QAction* action = new QAction(nullptr);
+        action->setObjectName("originSeparator");
+        action->setSeparator(true);
 
-        for (uint32 pluginIndex = 0; pluginIndex < pluginNames.size(); pluginIndex++)
-        {
-            FilePath scriptPath(pluginNames[pluginIndex]);
-            scriptPath.ReplaceFilename("Main.py");
-            if (scriptPath.Exists())
-            {
-                String pluginName = pluginNames[pluginIndex].GetLastDirectoryName();
-
-                QtAction* action = new QtAction(accessor, QString(pluginName.c_str()));
-                connections.AddConnection(action, &QAction::triggered, DAVA::Bind(static_cast<void (SceneManagerModule::*)(DAVA::String, DAVA::FilePath)>(&SceneManagerModule::RunPluginAsync), this, pluginName, scriptPath));
-
-                ActionPlacementInfo placementInfo;
-                placementInfo.AddPlacementPoint(CreateMenuPoint(MenuItems::menuPlugins, { InsertionParams::eInsertionMethod::AfterItem, "Help" }));
-                placementInfo.AddPlacementPoint(CreateToolbarPoint("mainToolBar", { InsertionParams::eInsertionMethod::AfterItem, "Plugins" }));
-
-                ui->AddAction(mainWindowKey, placementInfo, action);
-            }
-        }
+        ui->AddAction(DAVA::mainWindowKey, placement, action);
+        gpuFormatActions.push_back(action);
     }
 
+    createGpuAction(DAVA::GPU_ORIGIN);
+
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    // Reload Texture
     {
-        //////////////////////////////////////////////////////////////////////////////////////////////
-        // Menu View
-        // GPU
+        QToolButton* toolButton = new QToolButton();
 
-        // View/GPU action
-        QtAction* actionGPU = new QtAction(accessor, "GPU");
-
-        FieldDescriptor descriptorGPU;
-        descriptorGPU.fieldName = DAVA::FastName(SceneData::scenePropertyName);
-        descriptorGPU.type = DAVA::ReflectedTypeDB::Get<SceneData>();
-        actionGPU->SetStateUpdationFunction(QtAction::Enabled, descriptorGPU, [](const DAVA::Any& v)
-                                            { return v.CanCast<SceneData::TSceneType>() && v.Cast<SceneData::TSceneType>().Get() != nullptr; });
-
-        ActionPlacementInfo placementGPU(CreateMenuPoint(MenuItems::menuView, InsertionParams(InsertionParams::eInsertionMethod::BeforeItem)));
-        ui->AddAction(DAVA::mainWindowKey, placementGPU, actionGPU);
-
-        QActionGroup* actionGroup = new QActionGroup(actionGPU);
-        actionGroup->setExclusive(true);
-
-        DAVA::Vector<QAction*> gpuFormatActions;
-        ActionPlacementInfo placement(CreateMenuPoint(QList<QString>() << MenuItems::menuView
-                                                                       << "GPU"));
-
-        auto createGpuAction = [&](DAVA::eGPUFamily gpu)
+        QMenu* reloadTextureMenu = new QMenu(toolButton);
+        for (QAction* gpuAction : gpuFormatActions)
         {
-            QtAction* action = new QtAction(accessor, GlobalEnumMap<DAVA::eGPUFamily>::Instance()->ToString(gpu), nullptr);
-            actionGroup->addAction(action);
-
-            FieldDescriptor enabledFieldDescr;
-            enabledFieldDescr.fieldName = DAVA::FastName(SceneData::sceneLandscapeToolsPropertyName);
-            enabledFieldDescr.type = DAVA::ReflectedTypeDB::Get<SceneData>();
-            action->SetStateUpdationFunction(QtAction::Enabled, enabledFieldDescr, [](const DAVA::Any& v) -> DAVA::Any
-                                             { return v.CanCast<DAVA::uint32>() && v.Cast<DAVA::uint32>() == 0; });
-
-            FieldDescriptor checkedFieldDescr;
-            checkedFieldDescr.fieldName = DAVA::FastName(TEXTURE_GPU_FIELD_NAME);
-            checkedFieldDescr.type = DAVA::ReflectedTypeDB::Get<SceneManagerModuleDetail::SceneManagerGlobalData>();
-            action->SetStateUpdationFunction(QtAction::Checked, checkedFieldDescr, [gpu](const DAVA::Any& v)
-                                             { return v.CanCast<DAVA::eGPUFamily>() && v.Cast<DAVA::eGPUFamily>() == gpu; });
-            connections.AddConnection(action, &QAction::triggered, DAVA::Bind(&SceneManagerModule::ReloadAllTextures, this, gpu), Qt::QueuedConnection);
-
-            ui->AddAction(DAVA::mainWindowKey, placement, action);
-            gpuFormatActions.push_back(action);
-        };
-
-        for (int gpu = 0; gpu < DAVA::eGPUFamily::GPU_DEVICE_COUNT; ++gpu)
-        {
-            createGpuAction(static_cast<DAVA::eGPUFamily>(gpu));
+            reloadTextureMenu->addAction(gpuAction);
         }
 
-        // Separator
-        {
-            QAction* action = new QAction(nullptr);
-            action->setObjectName("originSeparator");
-            action->setSeparator(true);
+        QtAction* action = new QtAction(accessor, QIcon(":/QtIcons/reloadtextures.png"), QString(""));
+        connections.AddConnection(action, &QAction::triggered, [this]()
+                                  {
+                                      ReloadAllTextures(DAVA::Texture::GetPrimaryGPUForLoading());
+                                  },
+                                  Qt::QueuedConnection);
 
-            ui->AddAction(DAVA::mainWindowKey, placement, action);
-            gpuFormatActions.push_back(action);
-        }
+        FieldDescriptor sceneFieldDescr;
+        sceneFieldDescr.fieldName = DAVA::FastName(SceneData::scenePropertyName);
+        sceneFieldDescr.type = DAVA::ReflectedTypeDB::Get<SceneData>();
+        action->SetStateUpdationFunction(QtAction::Enabled, sceneFieldDescr, [](const DAVA::Any& v) {
+            return v.CanCast<SceneData::TSceneType>() && v.Cast<SceneData::TSceneType>().Get() != nullptr;
+        });
 
-        createGpuAction(DAVA::GPU_ORIGIN);
-
-        //////////////////////////////////////////////////////////////////////////////////////////////
-        // Reload Texture
-        {
-            QToolButton* toolButton = new QToolButton();
-
-            QMenu* reloadTextureMenu = new QMenu(toolButton);
-            for (QAction* gpuAction : gpuFormatActions)
-            {
-                reloadTextureMenu->addAction(gpuAction);
-            }
-
-            QtAction* action = new QtAction(accessor, QIcon(":/QtIcons/reloadtextures.png"), QString(""));
-            connections.AddConnection(action, &QAction::triggered, [this]()
-                                      { ReloadAllTextures(DAVA::Texture::GetPrimaryGPUForLoading()); }, Qt::QueuedConnection);
-
-            FieldDescriptor sceneFieldDescr;
-            sceneFieldDescr.fieldName = DAVA::FastName(SceneData::scenePropertyName);
-            sceneFieldDescr.type = DAVA::ReflectedTypeDB::Get<SceneData>();
-            action->SetStateUpdationFunction(QtAction::Enabled, sceneFieldDescr, [](const DAVA::Any& v)
-                                             { return v.CanCast<SceneData::TSceneType>() && v.Cast<SceneData::TSceneType>().Get() != nullptr; });
-
-            FieldDescriptor currentGPUDescr;
-            currentGPUDescr.fieldName = DAVA::FastName(TEXTURE_GPU_FIELD_NAME);
-            currentGPUDescr.type = DAVA::ReflectedTypeDB::Get<SceneManagerModuleDetail::SceneManagerGlobalData>();
-            action->SetStateUpdationFunction(QtAction::Text, currentGPUDescr, [](const DAVA::Any& v)
-                                             {
+        FieldDescriptor currentGPUDescr;
+        currentGPUDescr.fieldName = DAVA::FastName(TEXTURE_GPU_FIELD_NAME);
+        currentGPUDescr.type = DAVA::ReflectedTypeDB::Get<SceneManagerModuleDetail::SceneManagerGlobalData>();
+        action->SetStateUpdationFunction(QtAction::Text, currentGPUDescr, [](const DAVA::Any& v)
+                                         {
                                              DAVA::String result;
                                              if (v.CanCast<DAVA::eGPUFamily>())
                                              {
                                                  result = GlobalEnumMap<DAVA::eGPUFamily>::Instance()->ToString(v.Cast<DAVA::eGPUFamily>());
                                              }
-                                             return result; });
+                                             return result;
+                                         });
 
-            toolButton->setMenu(reloadTextureMenu);
-            toolButton->setPopupMode(QToolButton::MenuButtonPopup);
-            toolButton->setDefaultAction(action);
-            toolButton->setMaximumWidth(ResourceEditor::DEFAULT_TOOLBAR_CONTROL_SIZE_WITH_TEXT);
-            toolButton->setMinimumWidth(ResourceEditor::DEFAULT_TOOLBAR_CONTROL_SIZE_WITH_TEXT);
-            toolButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-            toolButton->setAutoRaise(false);
+        toolButton->setMenu(reloadTextureMenu);
+        toolButton->setPopupMode(QToolButton::MenuButtonPopup);
+        toolButton->setDefaultAction(action);
+        toolButton->setMaximumWidth(ResourceEditor::DEFAULT_TOOLBAR_CONTROL_SIZE_WITH_TEXT);
+        toolButton->setMinimumWidth(ResourceEditor::DEFAULT_TOOLBAR_CONTROL_SIZE_WITH_TEXT);
+        toolButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+        toolButton->setAutoRaise(false);
 
-            AttachWidgetToAction(action, toolButton);
+        AttachWidgetToAction(action, toolButton);
 
-            ActionPlacementInfo placement(CreateToolbarPoint("mainToolBar", InsertionParams(InsertionParams::eInsertionMethod::AfterItem)));
-            ui->AddAction(DAVA::mainWindowKey, placement, action);
-        }
+        ActionPlacementInfo placement(CreateToolbarPoint("mainToolBar", InsertionParams(InsertionParams::eInsertionMethod::AfterItem)));
+        ui->AddAction(DAVA::mainWindowKey, placement, action);
     }
 }
 
@@ -931,7 +860,8 @@ void SceneManagerModule::OpenSceneByPath(const DAVA::FilePath& scenePath)
                                      {
                                          DVASSERT(contextToActivate == DataContext::Empty);
                                          contextToActivate = ctx.GetID();
-                                     } });
+                                     }
+                                 });
 
         if (contextToActivate != DataContext::Empty)
         {
@@ -1063,7 +993,10 @@ void SceneManagerModule::GetPropertiesFilePath(const DAVA::FilePath& scenePath, 
     }
 
     // final path
-    path = FilePath(documentRoot.GetAbsolutePathname() + "/" + propertiesSubDir + "/" + projectHash + "/" + relativeSceneDirPath);
+    path = FilePath(documentRoot.GetAbsolutePathname()
+                    + "/" + propertiesSubDir
+                    + "/" + projectHash
+                    + "/" + relativeSceneDirPath);
 }
 
 void SceneManagerModule::SaveSceneToFolder(bool compressedTextures)
@@ -1117,7 +1050,7 @@ void SceneManagerModule::SaveSceneToFolder(bool compressedTextures)
     sceneSaver.SetOutFolder(folder);
     sceneSaver.EnableCopyConverted(compressedTextures);
 
-    { // tags
+    { //tags
         ProjectManagerData* data = GetAccessor()->GetGlobalContext()->GetData<ProjectManagerData>();
         if (data->GetEditorConfig()->HasProperty("Tags"))
         {
@@ -1179,7 +1112,9 @@ void SceneManagerModule::CloseAllScenes(bool needSavingReqiest)
     using namespace DAVA;
     DAVA::Vector<DataContext::ContextID> contexts;
     GetAccessor()->ForEachContext([&contexts](DataContext& context)
-                                  { contexts.push_back(context.GetID()); });
+                                  {
+                                      contexts.push_back(context.GetID());
+                                  });
 
     for (DataContext::ContextID id : contexts)
     {
@@ -1262,7 +1197,8 @@ void SceneManagerModule::ReloadAllTextures(DAVA::eGPUFamily gpu)
                                  {
                                      SceneData* data = ctx.GetData<SceneData>();
                                      SceneHelper::EnumerateSceneTextures(data->scene.Get(), collector);
-                                     SceneHelper::EnumerateMaterials(data->scene.Get(), allSceneMaterials); });
+                                     SceneHelper::EnumerateMaterials(data->scene.Get(), allSceneMaterials);
+                                 });
 
         DAVA::TexturesMap& allScenesTextures = collector.GetTextures();
         if (!allScenesTextures.empty())
@@ -1300,7 +1236,8 @@ void SceneManagerModule::ReloadAllTextures(DAVA::eGPUFamily gpu)
         accessor->ForEachContext([](DataContext& ctx)
                                  {
                                      SceneData* data = ctx.GetData<SceneData>();
-                                     data->scene->GetSystem<DAVA::EditorVegetationSystem>()->ReloadVegetation(); });
+                                     data->scene->GetSystem<DAVA::EditorVegetationSystem>()->ReloadVegetation();
+                                 });
 
         DAVA::Sprite::ReloadSprites(gpu);
         RestartParticles();
@@ -1673,7 +1610,9 @@ bool SceneManagerModule::SaveTileMaskInAllScenes()
     DAVA::Vector<DataContext::ContextID> contexts;
 
     accessor->ForEachContext([&contexts](DataContext& ctx)
-                             { contexts.push_back(ctx.GetID()); });
+                             {
+                                 contexts.push_back(ctx.GetID());
+                             });
 
     ModalMessageParams::Button answer = ModalMessageParams::NoButton;
     for (DataContext::ContextID contextID : contexts)
@@ -1788,7 +1727,8 @@ void SceneManagerModule::RestartParticles()
     GetAccessor()->ForEachContext([](DAVA::DataContext& ctx)
                                   {
                                       DAVA::SceneData* data = ctx.GetData<DAVA::SceneData>();
-                                      data->scene->GetSystem<DAVA::EditorParticlesSystem>()->RestartParticleEffects(); });
+                                      data->scene->GetSystem<DAVA::EditorParticlesSystem>()->RestartParticleEffects();
+                                  });
 }
 
 bool SceneManagerModule::IsSavingAllowed(DAVA::SceneData* sceneData)

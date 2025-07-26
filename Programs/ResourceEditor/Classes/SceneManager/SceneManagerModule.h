@@ -4,8 +4,8 @@
 
 #include <TArc/Core/ControllerModule.h>
 #include <TArc/Core/FieldBinder.h>
-#include <TArc/Models/RecentMenuItems.h>
 #include <TArc/Utils/QtConnections.h>
+#include <TArc/Models/RecentMenuItems.h>
 
 #include <Base/BaseTypes.h>
 
@@ -14,7 +14,7 @@ namespace DAVA
 class FilePath;
 class SceneEditor2;
 class SceneData;
-} // namespace DAVA
+}
 class FileSystemCache;
 
 class SceneManagerModule : public DAVA::ControllerModule, private SceneRenderWidget::IWidgetDelegate
@@ -57,8 +57,6 @@ private:
     void CloseAllScenes(bool needSavingReqiest);
     void ReloadAllTextures(DAVA::eGPUFamily gpu);
     void ReloadTextures(DAVA::Vector<DAVA::Texture*> textures);
-    void RunPluginAsync(DAVA::String pluginName, DAVA::FilePath scriptPath);
-    void RunPlugin(DAVA::String pluginName, DAVA::FilePath scriptPath);
 
     /// Fields value handlers
     void OnProjectPathChanged(const DAVA::Any& projectPath);
